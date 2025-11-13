@@ -1,52 +1,58 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../../static/css/home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>ATLAS</title>
 </head>
+
 <body>
     <div class="container">
         <header class="header">
-            <div>
+            <div class="logo">
                 <h1>ATLAS</h1>
                 <p>Gerencie o acervo da sua biblioteca</p>
             </div>
-            <button class="btn-primary" onclick="openAddBookModal()">Adicionar Livro</button>
+            <div class="header-buttons">
+                <button class="btn-primary" id="addBookBtn" onclick="openBookModal(add_modal)">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Livro
+                </button>
+                <button class="btn-icon" id="sign-out" onclick="logout()">
+                    <i class="	fa fa-sign-out"></i>
+                </button>
+            </div>
         </header>
 
         <div class="stats-container">
             <div class="stat-card total">
                 <h3>Total de Livros</h3>
-                <div class="number">{{ total_books }}</div>
-                <div>
-                    <img class="icon"
-                    src="../../static/images/book-open-svgrepo-com.svg" alt="Total de Livros">
+                <div class="number"> 0 </div>
+                <div class="icon">
+                    <i class="fas fa-book"></i>
                 </div>
             </div>
             <div class="stat-card available">
                 <h3>Disponíveis</h3>
-                <div class="number">{{ available_books }}</div>
-                <div>
-                    <img class="icon"
-                    src="../../static/images/book-open-svgrepo-com.svg" alt="Total de Livros">
+                <div class="number"> 0 </div>
+                <div class="icon">
+                    <i class="fas fa-check-circle"></i>
                 </div>
             </div>
             <div class="stat-card borrowed">
                 <h3>Emprestados</h3>
-                <div class="number">{{ borrowed_books }}</div>
-                <div>
-                    <img class="icon"
-                    src="../../static/images/book-open-svgrepo-com.svg" alt="Total de Livros">
+                <div class="number"> 0 </div>
+                <div class="icon">
+                    <i class="fas fa-user-clock"></i>
                 </div>
             </div>
         </div>
 
-        <input type="text" 
-               class="search-bar" 
-               placeholder="Buscar por título, autor, ISBN ou categoria..."
-               onkeyup="filterBooks(this.value)">
+        <input type="text" class="search-bar" placeholder="Buscar por título, autor, ISBN ou categoria..."
+            onkeyup="filterBooks(this.value)">
 
         <div class="books-table">
             <table>
@@ -59,18 +65,18 @@
                         <th>Ano</th>
                         <th>Status</th>
                         <th>Localização</th>
-                        <th>Ações</th>
+                        <th class="actions">Ações</th>
                     </tr>
                 </thead>
                 <tbody id="booksTableBody">
-                    
+
                 </tbody>
             </table>
         </div>
     </div>
 
     <!-- Modal Adicionar Livro -->
-    <div id="addBookModal" class="modal">
+    <div id="addBookModal" class="modal add-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Adicionar Novo Livro</h2>
@@ -87,7 +93,7 @@
                 </div>
                 <div class="form-group">
                     <label for="isbn">ISBN</label>
-                    <input type="text" id="isbn" name="isbn">
+                    <input type="number" id="isbn" name="isbn">
                 </div>
                 <div class="form-group">
                     <label for="categories">Categorias (separadas por vírgula)*</label>
@@ -107,5 +113,48 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal Editar Livro -->
+    <div id="editBookModal" class="modal edit-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Livro</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="editBookForm" onsubmit="handleEditBook(event)">
+                <div class="form-group">
+                    <label for="edit-title">Título*</label>
+                    <input type="text" id="edit-title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-author">Autor*</label>
+                    <input type="text" id="edit-author" name="author" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-isbn">ISBN</label>
+                    <input type="text" id="edit-isbn" name="isbn">
+                </div>
+                <div class="form-group">
+                    <label for="edit-categories">Categorias (separadas por vírgula)*</label>
+                    <input type="text" id="edit-categories" name="categories" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-year">Ano</label>
+                    <input type="number" id="edit-year" name="year" min="1" max="2100">
+                </div>
+                <div class="form-group">
+                    <label for="edit-location">Localização*</label>
+                    <input type="text" id="edit-location" name="location" placeholder="Ex: Estante A, prateleira 1"
+                        required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../../static/js/home.js"></script>
 </body>
+
 </html>

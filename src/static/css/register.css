@@ -2,19 +2,19 @@ body{
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.login-container {
+.container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
 }
 
-.login-form {
+.register-form {
     background: white;
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
+    width: 40rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -64,12 +64,10 @@ button:hover {
 }
 
 h2 {
-    text-align: center;
+    text-align: left;
     margin-bottom: 1rem;
     font-size: 1.5rem;
     font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.1rem;
 }
 
 p {

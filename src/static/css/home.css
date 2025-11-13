@@ -8,15 +8,31 @@
 
 body {
     font-family: Arial, Helvetica, sans-serif;
+    padding: 0;
 }
 
 .container {
     padding: 2rem;
+    padding-top: 8rem;
     background-color: #f9f9f9;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     gap: 2rem;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
 }
 
 .header p {
@@ -29,12 +45,6 @@ body {
     font-size: 2.5rem;
     margin: 0;
     color: #181818;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
 .btn-primary {
@@ -51,6 +61,8 @@ body {
 .stats-container {
     display: flex;
     gap: 2rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
 }
 
 .stat-card {
@@ -65,12 +77,28 @@ body {
     justify-content: space-between;
     gap: 1rem;
     overflow: hidden;
+    min-width: 8rem;
+    flex: 1 1 auto;
 }
 
 .stat-card h3 {
     margin: 0;
     font-size: 1.5rem;
     color: #777;
+}
+
+.stat-card .icon {
+    font-size: 2rem;
+    margin-top: 1rem;
+    color: var(--text-color);
+}
+
+.available .number{
+    color:#00C853;
+}
+
+.borrowed .number{
+    color:#FF3B30;
 }
 
 .number {
@@ -97,12 +125,13 @@ body {
     width: 100%;
     background: white;
     border-radius: 12px;
-    overflow: hidden;
+    overflow-x: auto;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 table {
     width: 100%;
+    min-width: 800px;
     border-collapse: collapse;
 }
 
@@ -142,9 +171,32 @@ td {
     gap: 1rem;
 }
 
+.btn-icon {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 1.25rem;
+}
+
+.btn-icon:hover {
+    color: var(--primary-color);
+}
+
+#sign-out {
+    font-size: 1.75rem;
+    text-align: center;
+    margin-left: 1rem;
+}
+
+.header-buttons{
+    display: flex;
+    align-items: center;
+}
+
 /* Modal Styles */
 .modal {
-    display: block;
+    display: none;
     position: fixed;
     z-index: 1000;
     left: 0;
@@ -224,4 +276,65 @@ td {
 
 .form-actions button {
     margin-left: 1rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+        padding-top: 7rem;
+    }
+
+    .header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .header p {
+        font-size: 1rem;
+    }
+
+    .header-buttons {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .stats-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .stat-card {
+        width: 100%;
+    }
+
+    .books-table {
+        border-radius: 8px;
+    }
+
+    /* Melhora a visualização da barra de scroll */
+    .books-table::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .books-table::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .books-table::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    .books-table::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
 }
