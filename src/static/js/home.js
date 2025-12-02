@@ -174,7 +174,7 @@ function deleteBook() {
 
 function logout() {
     sessionStorage.removeItem('usuarioLogado');
-    window.location.href = 'index.html';
+    window.location.href = '../../index.html';
 }
 
 function addBook(formData)
