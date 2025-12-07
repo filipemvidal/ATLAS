@@ -1,5 +1,5 @@
 const usuarios = [{
-        nome: "Alexandre",
+        nome: "Funcionário",
         cpf:"12345678909",
         password: "1234",
         role: "Funcionario"
