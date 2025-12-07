@@ -1,76 +1,38 @@
-# Sistema de Gestão de Biblioteca
+# ATLAS — Modelagem de Sistemas
 
-Este é um sistema web de gestão de biblioteca desenvolvido com Flask, seguindo o padrão MVC (Model-View-Controller).
+Projeto estático de páginas web para o curso de Modelagem de Sistemas. Contém telas de home, leitores e cadastro, com HTML, CSS e JavaScript simples.
 
-## Estrutura do Projeto
+## Estrutura
 
 ```
-ATLAS-ModelagemSistemas/
-├── src/                    # Código fonte principal
-│   ├── static/            # Arquivos estáticos
-│   │   ├── css/          # Arquivos de estilo CSS
-│   │   ├── js/           # Scripts JavaScript
-│   │   └── images/       # Imagens do sistema
-│   ├── templates/         # Templates HTML (Jinja2)
-│   ├── models/           # Modelos de dados (classes ORM)
-│   ├── controllers/      # Controladores (rotas Flask)
-│   └── services/         # Lógica de negócio
-└── tests/                # Testes unitários e de integração
+index.html
+src/
+  static/
+    css/
+      home.css
+      login.css
+      readers.css
+      register.css
+    html/
+      home.html
+      readers.html
+      register.html
+    js/
+      home.js
+      login.js
+      readers.js
+      register.js
 ```
 
-## Descrição dos Diretórios
+## Executando com um servidor HTTP simples
 
-### Código Fonte (`src/`)
-
-- **static/**: Contém todos os arquivos estáticos do projeto
-  - `css/`: Arquivos de estilo CSS
-  - `js/`: Scripts JavaScript para interatividade no cliente
-  - `images/`: Imagens e recursos visuais
-
-- **templates/**: Templates HTML usando Jinja2
-  - Contém as views do sistema
-  - Usa o sistema de templates Jinja2 do Flask
-
-- **models/**: Classes de modelo
-  - Define as entidades do sistema
-  - Implementa as classes ORM para interação com o banco de dados
-
-- **controllers/**: Controladores do sistema
-  - Gerencia as rotas da aplicação
-  - Processa requisições HTTP
-  - Conecta os models com as views
-
-- **services/**: Camada de serviços
-  - Implementa a lógica de negócio
-  - Separa regras de negócio dos controllers
-
-### Testes (`tests/`)
-
-- Contém todos os testes automatizados
-- Inclui testes unitários e de integração
-- Segue as boas práticas de teste do Python
-
-## Tecnologias Utilizadas
-
-- **Backend**: Flask (Python)
-- **Templates**: Jinja2
-- **Frontend**: HTML, CSS, JavaScript
-- **Banco de Dados**: Json
-
-## Requisitos do Sistema
-
-- Python 3.8+
-- Flask
-- Outras dependências serão listadas no arquivo requirements.txt
-
-## Como Executar (A ser implementado)
-
-1. Clone o repositório
-2. Crie um ambiente virtual
-3. Instale as dependências
-4. Configure as variáveis de ambiente
-5. Execute o servidor Flask
+Você pode usar um servidor local para servir os arquivos estáticos com http server:
 
 ```bash
-# Instruções serão adicionadas conforme o desenvolvimento
+npx http-server
 ```
+
+Acesse em: http://localhost:8080/
+
+## Notas
+- Este repositório não requer build; os arquivos são estáticos.
