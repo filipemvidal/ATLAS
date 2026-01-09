@@ -75,6 +75,15 @@ td {
     color: var(--primary-color);
 }
 
+#readersTableBody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#readersTableBody tr:hover {
+    background-color: #f8f8f8;
+}
+
 .btn-primary {
     background-color: #181818;
     color: white;
@@ -83,6 +92,7 @@ td {
     border-radius: 4px;
     cursor: pointer;
     font-size: 1rem;
+    gap: 1.5rem;
 }
 
 .header-buttons {
@@ -108,6 +118,234 @@ td {
     padding: 1rem;
     border: 1px solid #ddd;
     border-radius: 8px;
-    margin-bottom: 2rem;
     font-size: 1rem;
+}
+
+/* Estilo para linhas clicáveis */
+.table-body tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.table-body tr:hover {
+    background-color: #f8f8f8;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 1% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 95%;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    position: sticky;
+    top: 0;
+    background-color: #f8f8f8;
+    padding: 1.0rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+.close {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: var(--primary-color);
+}
+
+.form-group {
+    margin: 0.5rem 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.form-row {
+    display: flex;
+    margin-bottom: 0.5rem;
+}
+
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.form-actions {
+    padding: 0.8rem;
+    border-top: 1px solid var(--border-color);
+    text-align: right;
+}
+
+.form-actions button {
+    margin-left: 1rem;
+}
+
+/* Modal de Detalhes*/
+.modal-details {
+    max-width: 700px;
+}
+
+.details-content {
+    padding: 0.0 1.5rem;
+}
+
+.details-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+}
+
+.detail-item {
+    display: flex;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--text-color);
+    min-width: 120px;
+    margin-right: 1rem;
+}
+
+.detail-value {
+    color: var(--primary-color);
+    flex: 1;
+}
+
+/* Lista de empréstimos (modal detalhes leitor) */
+.borrowed-table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.borrowed-table table {
+    width: 100%;
+    min-width: auto;
+}
+
+.borrowed-table th {
+    background-color: #f8f8f8;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.borrowed-table td {
+    padding: 0.75rem;
+}
+
+.borrowed-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.borrowed-table tbody tr:hover {
+    background-color: #f0f0f0;
+}
+
+/* Detalhes do Empréstimo */
+.details-section.borrow-section {
+    background:  #f9f9f9;
+    padding: 0.8rem;
+    border-radius: 6px;
+    margin: -1.5rem;
+    margin-top: 0;
+    padding: 1.5rem;
+}
+
+.details-section.borrow-section h3 {
+    margin-top: 0;
+}
+
+.details-cards {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    background: #f9f9f9;
+}
+
+.detail-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    flex: 1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.detail-card h4 {
+    margin: 0.5rem 0;
+    font-weight: 600;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.book-details-btns {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    justify-content: center;
+}
+
+/* Footer do modal de detalhes */
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    background-color: #f8f8f8;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
 }

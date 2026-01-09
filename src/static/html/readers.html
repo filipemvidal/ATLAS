@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,8 +34,152 @@
                         <th>Matrícula</th>
                     </tr>
                 </thead>
-                <tbody id="readersTableBody"></tbody>
+                <tbody class="table-body" id="readersTableBody"></tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes do Leitor -->
+    <div id="readerDetailsModal" class="modal details-modal">
+        <div class="modal-content modal-details">
+            <div class="modal-header">
+                <h2 class="detail-value" id="detail-name">[Nome do leitor]</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="details-content">
+                <div class="details-section">
+                    <h3>Informações Gerais</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">CPF:</span>
+                        <span class="detail-value" id="detail-cpf"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value" id="detail-email"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Matrícula:</span>
+                        <span class="detail-value" id="detail-matricula"></span>
+                    </div>
+                </div>
+                
+                <div class="details-section">
+                    <h3>Empréstimos</h3>
+                    <div class="borrowed-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Título</th>
+                                    <th>ISBN</th>
+                                    <th>Data de Empréstimo</th>
+                                    <th>Data de Devolução</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="table-body">
+                                <tr>
+                                    <td>Livro Exemplo</td>
+                                    <td>123-456-789</td>
+                                    <td>01/01/2024</td>
+                                    <td>15/01/2024</td>
+                                    <td>Em atraso</td>
+                                </tr>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+                <div class="modal-footer" id="details-modal-footer">
+                    <button class="btn-primary" onclick="deleteReader()">
+                        <i class="fas fa-trash"></i>
+                        Excluir Leitor
+                    </button>
+                </div>
+        </div>
+    </div>
+
+     <!-- Modal Detalhes do Livro -->
+    <div id="bookDetailsModal" class="modal details-modal">
+        <div class="modal-content modal-details">
+            <div class="modal-header">
+                <h2>Detalhes do Livro</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="details-content">
+                <div class="details-section">
+                    <h3>Informações Gerais</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Título:</span>
+                        <span class="detail-value" id="detail-title"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Autor:</span>
+                        <span class="detail-value" id="detail-author"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Editora:</span>
+                        <span class="detail-value" id="detail-publisher"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Edição:</span>
+                        <span class="detail-value" id="detail-edition"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">ISBN:</span>
+                        <span class="detail-value" id="detail-isbn"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Categorias:</span>
+                        <span class="detail-value" id="detail-categories"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Ano:</span>
+                        <span class="detail-value" id="detail-year"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Localização:</span>
+                        <span class="detail-value" id="detail-location"></span>
+                    </div>
+                </div>
+                
+                <div class="details-section borrow-section">
+                    <h3>Empréstimo</h3>
+                    <div class="details-cards">
+                        <div class="detail-card">
+                            <h4>Exemplar</h4>
+                            <span class="detail-value" id="detail-copie"></span>
+                        </div>
+                        <div class="detail-card">
+                            <h4>Data de empréstimo</h4>
+                            <span class="detail-value" id="detail-borrow-date"></span>
+                        </div>
+                        <div class="detail-card">
+                            <h4>Data de devolução</h4>
+                            <span class="detail-value" id="detail-return-date"></span>
+                        </div>
+                        <div class="detail-card">
+                            <h4>Total a pagar</h4>
+                            <span class="detail-value" id="detail-total-payable"></span>
+                        </div>
+                    </div>
+                    <div class="book-details-btns">
+                        <button class="btn-primary btn-book-details" onclick="registerReturn()">
+                            <i class="fas fa-undo"></i>
+                            Registrar devolução
+                        </button>
+                        <button class="btn-primary btn-book-details" onclick="removeDebit()">
+                            <i class="fas fa-money-bill-wave"></i>
+                            Retirar débito
+                        </button>
+                        <button class="btn-primary btn-book-details" onclick="renewBorrow()">
+                            <i class="fas fa-sync-alt"></i>
+                            Renovar empréstimo
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
         </div>
     </div>
 
