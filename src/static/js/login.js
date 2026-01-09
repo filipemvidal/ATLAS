@@ -83,12 +83,14 @@ async function handleLogin(event) {
 
     let usuarioEncontrado = null;
     
+    // MODIFICAR: buscar na base de dados
     for(let i=0; i<usuarios.length; i++){
         if(usuarios[i].cpf === cpf && usuarios[i].password === senha) {
             usuarioEncontrado = usuarios[i]
             break;
         }
     }
+    // FIM-MODIFICAR
     
     if (usuarioEncontrado) {
         sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioEncontrado));

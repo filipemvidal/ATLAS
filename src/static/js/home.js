@@ -255,8 +255,8 @@ function showBookDetails(bookIndex) {
     const borrowBtn = document.getElementById('btnBorrowFromDetails');
     const modalFooter = document.getElementById('details-modal-footer');
     
-    if (usuarioLogado.role === 'Funcionario') {
-        modalFooter.style.display = 'block';
+    // if (usuarioLogado.role === 'Funcionario') {
+        modalFooter.style.display = 'flex';
         if (bookData.availableCopies > 0) {
             borrowBtn.disabled = false;
             borrowBtn.style.opacity = '1';
@@ -265,9 +265,9 @@ function showBookDetails(bookIndex) {
             borrowBtn.style.opacity = '0.5';
             borrowBtn.title = 'Não há exemplares disponíveis';
         }
-    } else {
-        modalFooter.style.display = 'none';
-    }
+    // } else {
+    //     modalFooter.style.display = 'none';
+    // }
     
     openBookModal(details_modal);
 }
