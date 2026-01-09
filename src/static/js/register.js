@@ -69,7 +69,10 @@ async function handleRegister(event)
         return;
     }
 
-    console.log('Cadasrando:', { nome, email, cpf, matricula, senha });
+    // TO-DO: Enviar dados para a base de dados
+
+    alert('Registro realizado com sucesso! Você já pode fazer login.');
+    window.location.href = 'index.html';
     
     document.getElementById('registerForm').reset();
 }

@@ -1,6 +1,100 @@
 const readerModal = document.getElementById('readerDetailsModal');
 const bookModal = document.getElementById('bookDetailsModal');
 
+// DELETE
+const usuarios = [{
+        nome: "Alexandre",
+        cpf:"12345678909",
+        email: "alexandre@gmail.com",
+        matricula: "202365001",
+        password: "1234",
+        role: "Funcionario",
+        emprestimos: [
+            {
+                titulo: "Clean Code",
+                isbn: "978-0132350884",
+                autor: "Robert C. Martin",
+                editora: "Prentice Hall",
+                edicao: "1ª",
+                categorias: "Programação",
+                ano: "2008",
+                localizacao: "Estante A3",
+                exemplar: "07",
+                dataEmprestimo: "11/02/2025",
+                dataDevolucao: "17/02/2025",
+                status: "Ativo",
+                totalAPagar: "R$ 0,00"
+            }
+        ]
+    },{
+        nome: "Ana",
+        cpf:"76841799003",
+        email: "ana@gmail.com",
+        matricula: "202365002",
+        password: "1234",
+        role: "Professor",
+        emprestimos: [
+            {
+                titulo: "Design Patterns",
+                isbn: "978-0201633610",
+                autor: "Gang of Four",
+                editora: "Addison-Wesley",
+                edicao: "1ª",
+                categorias: "Arquitetura de Software",
+                ano: "1994",
+                localizacao: "Estante B2",
+                exemplar: "03",
+                dataEmprestimo: "05/01/2026",
+                dataDevolucao: "20/01/2026",
+                status: "Em atraso",
+                totalAPagar: "R$ 15,00"
+            }
+        ]
+    },{
+        nome: "Carlos",
+        cpf:"77183381005",
+        email: "carlos@gmail.com",
+        matricula: "202365003",
+        password: "1234",
+        role: "Aluno",
+        emprestimos: []
+    }
+];
+
+for (const usuario of usuarios) {
+    addReaderRow(usuario);
+}
+// FIM-DELETE
+
+// TO-DO: Carregar leitores da base de dados
+
+// Funções de gerenciamento de modais
+function openModal(modal){
+    modal.style.display = 'block';
+}
+
+function closeModal(modal){
+    modal.style.display = 'none';
+}
+
+// Fecha os modais ao clicar no botão de fechar
+const closeBtns = document.querySelectorAll('.close');
+closeBtns.forEach(btn => {
+    btn.onclick = function() {
+        const modal = btn.closest('.modal');
+        if (modal) {
+            closeModal(modal);
+        }
+    };
+});
+
+// Fecha os modais ao clicar fora do conteúdo
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        closeModal(event.target);
+    }
+};
+
 function logout() {
     sessionStorage.removeItem('usuarioLogado');
     window.location.href = 'index.html';
@@ -89,94 +183,6 @@ function showBookDetails(emprestimo) {
     
     openModal(bookModal);
 }
-
-const usuarios = [{
-        nome: "Alexandre",
-        cpf:"12345678909",
-        email: "alexandre@gmail.com",
-        matricula: "202365001",
-        password: "1234",
-        role: "Funcionario",
-        emprestimos: [
-            {
-                titulo: "Clean Code",
-                isbn: "978-0132350884",
-                autor: "Robert C. Martin",
-                editora: "Prentice Hall",
-                edicao: "1ª",
-                categorias: "Programação",
-                ano: "2008",
-                localizacao: "Estante A3",
-                exemplar: "07",
-                dataEmprestimo: "11/02/2025",
-                dataDevolucao: "17/02/2025",
-                status: "Ativo",
-                totalAPagar: "R$ 0,00"
-            }
-        ]
-    },{
-        nome: "Ana",
-        cpf:"76841799003",
-        email: "ana@gmail.com",
-        matricula: "202365002",
-        password: "1234",
-        role: "Professor",
-        emprestimos: [
-            {
-                titulo: "Design Patterns",
-                isbn: "978-0201633610",
-                autor: "Gang of Four",
-                editora: "Addison-Wesley",
-                edicao: "1ª",
-                categorias: "Arquitetura de Software",
-                ano: "1994",
-                localizacao: "Estante B2",
-                exemplar: "03",
-                dataEmprestimo: "05/01/2026",
-                dataDevolucao: "20/01/2026",
-                status: "Em atraso",
-                totalAPagar: "R$ 15,00"
-            }
-        ]
-    },{
-        nome: "Carlos",
-        cpf:"77183381005",
-        email: "carlos@gmail.com",
-        matricula: "202365003",
-        password: "1234",
-        role: "Aluno",
-        emprestimos: []
-    }
-];
-
-for (const usuario of usuarios) {
-    addReaderRow(usuario);
-}
-
-function openModal(modal){
-    modal.style.display = 'block';
-}
-
-function closeModal(modal){
-    modal.style.display = 'none';
-}
-
-const closeBtns = document.querySelectorAll('.close');
-
-closeBtns.forEach(btn => {
-    btn.onclick = function() {
-        const modal = btn.closest('.modal');
-        if (modal) {
-            closeModal(modal);
-        }
-    };
-});
-
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        closeModal(event.target);
-    }
-};
 
 function deleteReader() {
     // Função para deletar leitor (a ser implementada)
