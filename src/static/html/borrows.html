@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/borrows.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>ATLAS | Gerenciar Leitores</title>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <h1>ATLAS</h1>
+                <p>Gerencie o acervo da sua biblioteca</p>
+            </div>
+            <div class="header-buttons">
+                <button class="btn-icon" id="sign-out" onclick="logout()">
+                    <i class="	fa fa-sign-out"></i>
+                </button>
+            </div>
+        </header>
+
+        <input type="text" class="search-bar" placeholder="Buscar por Nome, CPF, Email ou Matrícula"
+            onkeyup="filterBorrows(this.value)">
+
+        <div class="borrows-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Autor</th>
+                        <th>Edição</th>
+                        <th>ISBN</th>
+                        <th>Data de empréstimo</th>
+                        <th>Data de devolução</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody class="table-body" id="borrowsTableBody">
+                        <tr>
+                            <td>Cronicas</td>
+                            <td>Gabriel García Márquez</td>
+                            <td>1ª Edição</td>
+                            <td>978-3-16-148410-0</td>
+                            <td>01/06/2024</td>
+                            <td>15/06/2024</td>
+                            <td>Empréstimo Ativo</td>
+                            <td><button class="btn-primary btn-sm">Renovar</button></td>
+                        </tr>
+                        <tr>
+                            <td>Ablublebe</td>
+                            <td>Gabriel García Márquez</td>
+                            <td>1ª Edição</td>
+                            <td>978-3-16-148410-0</td>
+                            <td>01/06/2024</td>
+                            <td>15/06/2024</td>
+                            <td>Empréstimo Ativo</td>
+                            <td><button class="btn-primary btn-sm">Renovar</button></td>
+                        </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../js/borrows.js"></script>
+</body>
+</html>

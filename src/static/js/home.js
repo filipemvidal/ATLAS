@@ -334,6 +334,10 @@ function handleBorrowWithCpf(event) {
     }
 }
 
+function openBorrowsPage() {
+    window.location.href = 'borrows.html';
+}
+
 const livros = [
     {
         title: "Dom Casmurro",
@@ -397,9 +401,14 @@ if (!usuarioLogado) {
     window.location.href = 'index.html';
 }
 
-if(usuarioLogado.role !== 'Funcionario') {
-    document.getElementById('addBookBtn').style.display = 'none';
-    document.getElementById('openReadersBtn').style.display = 'none';
+const addBookBtn = document.getElementById('addBookBtn');
+const openReadersBtn = document.getElementById('openReadersBtn');
+const openBorrowsBtn = document.getElementById('borrowsBtn');
+if(usuarioLogado.role === 'Funcionario') {
+    openBorrowsBtn.style.display = 'none';
+} else {
+    addBookBtn.style.display = 'none';
+    openReadersBtn.style.display = 'none';
     const actionHeader = document.querySelector('th.actions');
     if (actionHeader) {
         actionHeader.style.display = 'none';
