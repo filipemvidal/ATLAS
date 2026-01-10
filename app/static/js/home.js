@@ -13,43 +13,6 @@ const total_borrowed = document.getElementById('total-borrowed');
 let booksData = [];
 let currentBorrowBookId = null;
 
-// Carregar livros ao iniciar a página
-async function carregarLivros() {
-    try {
-        const response = await fetch('/api/books/');
-        const livros = await response.json();
-        
-        // Limpar tabela
-        document.getElementById('booksTableBody').innerHTML = '';
-        booksData = livros;
-        
-        // Adicionar cada livro na tabela
-        livros.forEach(livro => {
-            addBook(livro);
-        });
-        
-        // Atualizar totais
-        atualizarTotais();
-    } catch (error) {
-        console.error('Erro ao carregar livros:', error);
-        alert('Erro ao carregar livros. Tente novamente.');
-    }
-}
-
-function atualizarTotais() {
-    let totalExemplares = 0;
-    let totalEmprestados = 0;
-    
-    booksData.forEach(livro => {
-        totalExemplares += livro.exemplares_totais || 0;
-        totalEmprestados += livro.exemplares_emprestados || 0;
-    });
-    
-    total_books.textContent = totalExemplares;
-    total_available.textContent = totalExemplares - totalEmprestados;
-    total_borrowed.textContent = totalEmprestados;
-}
-
 // Carregar livros quando a página é carregada
 carregarLivros();
 
@@ -94,6 +57,43 @@ window.onclick = function(event) {
         closeModal(event.target);
     }
 };
+
+// Carregar livros ao iniciar a página
+async function carregarLivros() {
+    try {
+        const response = await fetch('/api/books/');
+        const livros = await response.json();
+        
+        // Limpar tabela
+        document.getElementById('booksTableBody').innerHTML = '';
+        booksData = livros;
+        
+        // Adicionar cada livro na tabela
+        livros.forEach(livro => {
+            addBook(livro);
+        });
+        
+        // Atualizar totais
+        atualizarTotais();
+    } catch (error) {
+        console.error('Erro ao carregar livros:', error);
+        alert('Erro ao carregar livros. Tente novamente.');
+    }
+}
+
+function atualizarTotais() {
+    let totalExemplares = 0;
+    let totalEmprestados = 0;
+    
+    booksData.forEach(livro => {
+        totalExemplares += livro.exemplares_totais || 0;
+        totalEmprestados += livro.exemplares_emprestados || 0;
+    });
+    
+    total_books.textContent = totalExemplares;
+    total_available.textContent = totalExemplares - totalEmprestados;
+    total_borrowed.textContent = totalEmprestados;
+}
 
 function openAddBookModal() {
     openModal(add_modal);
@@ -172,102 +172,87 @@ function filterBooks(query) {
     });
 }
 
-function editBook() {
-    const row = event.target.closest('tr');
+function editBook(bookId) {
+    // Buscar livro pelo ID no array booksData
+    const bookData = booksData.find(livro => livro.id === bookId);
     
-    if (row) {
-        // TO-DO: Carregar dados do livro a partir da base de dados
-
-        // DELETE
-        const cells = row.cells;
-        const title = cells[0].textContent;
-        const author = cells[1].textContent;
-        const publisher = cells[2].textContent;
-        const edition = cells[3].textContent;
-        const isbn = cells[4].textContent;
-        const categories = cells[5].textContent;
-        const year = cells[6].textContent;
-        const copies = cells[7].textContent;
-        const location = cells[8].textContent;
-        
-        document.getElementById('edit-title').value = title;
-        document.getElementById('edit-author').value = author;
-        document.getElementById('edit-publisher').value = publisher;
-        document.getElementById('edit-edition').value = edition;
-        document.getElementById('edit-isbn').value = isbn;
-        document.getElementById('edit-categories').value = categories;
-        document.getElementById('edit-year').value = year;
-        document.getElementById('edit-copies').value = copies;
-        document.getElementById('edit-location').value = location;
-        
-        edit_modal.dataset.editingRow = row.rowIndex;
-        edit_modal.dataset.bookIndex = row.dataset.bookIndex;
-        // FIM-DELETE
-        
-        openModal(edit_modal);
+    if (!bookData) {
+        alert('Livro não encontrado.');
+        return;
     }
+    
+    // Preencher o formulário de edição com os dados do livro
+    document.getElementById('edit-title').value = bookData.titulo;
+    document.getElementById('edit-author').value = bookData.autor;
+    document.getElementById('edit-publisher').value = bookData.editora;
+    document.getElementById('edit-edition').value = bookData.edicao;
+    document.getElementById('edit-isbn').value = bookData.isbn || '';
+    document.getElementById('edit-categories').value = Array.isArray(bookData.categorias) 
+        ? bookData.categorias.join(', ') 
+        : bookData.categorias;
+    document.getElementById('edit-year').value = bookData.ano || '';
+    document.getElementById('edit-copies').value = bookData.exemplares_totais;
+    document.getElementById('edit-location').value = bookData.localizacao;
+    
+    // Armazenar o ID do livro para usar no submit
+    edit_modal.dataset.bookId = bookId;
+    
+    openModal(edit_modal);
 }
 
 async function handleEditBook(event) {
     event.preventDefault();
     
-    // DELETE
-    const rowIndex = edit_modal.dataset.editingRow;
-    const bookIndex = parseInt(edit_modal.dataset.bookIndex);
-    const row = document.querySelector(`#booksTableBody tr:nth-child(${rowIndex})`);
-    // FIM-DELETE
+    // Obter o ID do livro armazenado no modal
+    const bookId = parseInt(edit_modal.dataset.bookId);
     
+    if (!bookId) {
+        alert('Erro: ID do livro não encontrado.');
+        return;
+    }
     
-    if (row) {
-        // TO-DO: Buscar dados antigos na base de dados
-        // TO-DO: Atualizar dados do livro na base de dados
-
-        // DELETE
-        const formData = {
-            title: document.getElementById('edit-title').value,
-            author: document.getElementById('edit-author').value,
-            publisher: document.getElementById('edit-publisher').value,
-            edition: document.getElementById('edit-edition').value,
-            isbn: document.getElementById('edit-isbn').value || '-',
-            categories: document.getElementById('edit-categories').value,
-            year: document.getElementById('edit-year').value,
-            copies: parseInt(document.getElementById('edit-copies').value) || 0,
-            location: document.getElementById('edit-location').value
-        };
+    // Coletar dados do formulário
+    const formData = {
+        titulo: document.getElementById('edit-title').value.trim(),
+        autor: document.getElementById('edit-author').value.trim(),
+        editora: document.getElementById('edit-publisher').value.trim(),
+        edicao: document.getElementById('edit-edition').value.trim(),
+        isbn: document.getElementById('edit-isbn').value.trim(),
+        categorias: document.getElementById('edit-categories').value.split(',').map(cat => cat.trim()).filter(cat => cat !== ''),
+        ano: parseInt(document.getElementById('edit-year').value) || null,
+        localizacao: document.getElementById('edit-location').value.trim(),
+        exemplares_totais: parseInt(document.getElementById('edit-copies').value)
+    };
+    
+    // Validar campos obrigatórios
+    if (!formData.titulo || !formData.autor || !formData.editora || !formData.edicao || !formData.exemplares_totais) {
+        alert('Por favor, preencha todos os campos obrigatórios.');
+        return;
+    }
+    
+    try {
+        // Enviar requisição PUT para atualizar o livro
+        const response = await fetch(`/api/books/${bookId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
         
-        row.cells[0].textContent = formData.title;
-        row.cells[1].textContent = formData.author;
-        row.cells[2].textContent = formData.publisher;
-        row.cells[3].textContent = formData.edition;
-        row.cells[4].textContent = formData.isbn;
-        row.cells[5].textContent = formData.categories;
-        row.cells[6].textContent = formData.year;
-        row.cells[7].textContent = formData.copies;
-        row.cells[8].textContent = formData.location;
-        
-        // Atualiza os dados do livro no array
-        const currentAvailable = booksData[bookIndex].availableCopies;
-        const currentBorrowed = booksData[bookIndex].borrowedCopies;
-        const currentTotal = booksData[bookIndex].totalCopies;
-        const newTotal = formData.copies;
-        
-        booksData[bookIndex] = {
-            ...formData,
-            categories: formData.categories.split(',').map(cat => cat.trim()),
-            availableCopies: currentAvailable + (newTotal - currentTotal),
-            borrowedCopies: currentBorrowed,
-            totalCopies: newTotal
-        };
-        
-        total_books.textContent = parseInt(total_books.textContent) + newTotal - currentTotal;
-        total_available.textContent = parseInt(total_available.textContent) + newTotal - currentTotal;
-        
-        console.log('Livro editado:', formData);
-        // FIM-DELETE
-        
-        closeModal(edit_modal);
-        
-        document.getElementById('editBookForm').reset();
+        if (response.ok) {
+            // Recarregar lista de livros da API
+            await carregarLivros();
+            
+            closeModal(edit_modal);
+            alert('Livro atualizado com sucesso!');
+        } else {
+            const error = await response.json();
+            alert('Erro ao atualizar livro: ' + (error.erro || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar livro:', error);
+        alert('Erro ao conectar com o servidor.');
     }
 }
 
@@ -306,45 +291,47 @@ function logout() {
     window.location.href = '../../../index.html';
 }
 
-function showBookDetails(bookIndex) {
-    // TO-DO: Buscar dados do livro a partir da base de dados
-
-    // DELETE
-    const bookData = booksData[bookIndex];
-    // FIM-DELETE
+function showBookDetails(bookId) {
+    // Buscar livro pelo ID no array booksData
+    const bookData = booksData.find(livro => livro.id === bookId);
     
-    if (!bookData || bookData === null) return;
+    if (!bookData) {
+        alert('Livro não encontrado.');
+        return;
+    }
+    
+    const exemplares_disponiveis = bookData.exemplares_totais - bookData.exemplares_emprestados;
     
     // Preenche as informações gerais
-    document.getElementById('detail-title').textContent = bookData.title;
-    document.getElementById('detail-author').textContent = bookData.author;
-    document.getElementById('detail-publisher').textContent = bookData.publisher;
-    document.getElementById('detail-edition').textContent = bookData.edition;
+    document.getElementById('detail-title').textContent = bookData.titulo;
+    document.getElementById('detail-author').textContent = bookData.autor;
+    document.getElementById('detail-publisher').textContent = bookData.editora;
+    document.getElementById('detail-edition').textContent = bookData.edicao;
     document.getElementById('detail-isbn').textContent = bookData.isbn || '-';
-    document.getElementById('detail-categories').textContent = Array.isArray(bookData.categories) 
-        ? bookData.categories.join(", ") 
-        : bookData.categories;
-    document.getElementById('detail-year').textContent = bookData.year;
-    document.getElementById('detail-location').textContent = bookData.location;
+    document.getElementById('detail-categories').textContent = Array.isArray(bookData.categorias) 
+        ? bookData.categorias.join(", ") 
+        : bookData.categorias;
+    document.getElementById('detail-year').textContent = bookData.ano || '-';
+    document.getElementById('detail-location').textContent = bookData.localizacao;
     
     // Preenche a tabela de exemplares
-    document.getElementById('detail-available-copies').textContent = bookData.availableCopies;
-    document.getElementById('detail-borrowed-copies').textContent = bookData.borrowedCopies;
-    document.getElementById('detail-total-copies').textContent = bookData.totalCopies;
+    document.getElementById('detail-available-copies').textContent = exemplares_disponiveis;
+    document.getElementById('detail-borrowed-copies').textContent = bookData.exemplares_emprestados;
+    document.getElementById('detail-total-copies').textContent = bookData.exemplares_totais;
     
-    // Armazena o índice do livro atual
-    details_modal.dataset.currentBookIndex = bookIndex;
+    // Armazena o ID do livro atual
+    details_modal.dataset.currentBookId = bookId;
     
     // Mostra/esconde o botão de empréstimo baseado na disponibilidade
     const borrowBtn = document.getElementById('btnBorrowFromDetails');
-        if (bookData.availableCopies > 0) {
-            borrowBtn.disabled = false;
-            borrowBtn.style.opacity = '1';
-        } else {
-            borrowBtn.disabled = true;
-            borrowBtn.style.opacity = '0.5';
-            borrowBtn.title = 'Não há exemplares disponíveis';
-        }
+    if (exemplares_disponiveis > 0) {
+        borrowBtn.disabled = false;
+        borrowBtn.style.opacity = '1';
+    } else {
+        borrowBtn.disabled = true;
+        borrowBtn.style.opacity = '0.5';
+        borrowBtn.title = 'Não há exemplares disponíveis';
+    }
     
     openModal(details_modal);
 }
