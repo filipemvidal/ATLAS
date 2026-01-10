@@ -39,6 +39,22 @@ input {
     font-size: 1rem;
 }
 
+select {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    background-color: white;
+    cursor: pointer;
+}
+
+select:focus {
+    outline: none;
+    border-color: #181818;
+}
+
 .toggle-password {
     position: absolute;
     right: 1rem;

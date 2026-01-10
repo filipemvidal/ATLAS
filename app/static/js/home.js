@@ -1,4 +1,6 @@
-const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+// Carregar dados do usuário logado do Flask
+const usuarioLogado = JSON.parse(document.getElementById('usuario-data').textContent);
+
 const closeBtns = document.querySelectorAll('.close');
 const add_modal = document.getElementById('addBookModal');
 const edit_modal = document.getElementById('editBookModal');
@@ -8,89 +10,54 @@ const total_books = document.getElementById('total-number');
 const total_available = document.getElementById('total-available');
 const total_borrowed = document.getElementById('total-borrowed');
 
-// DELETE
 let booksData = [];
-let currentBorrowBookIndex = null;
+let currentBorrowBookId = null;
 
-const livros = [
-    {
-        title: "Dom Casmurro",
-        author: "Machado de Assis",
-        publisher: "Companhia das Letras",
-        edition: "1ª",
-        isbn: "9788544001080",
-        categories: ["Romance", "Literatura Brasileira"],
-        year: 1899,
-        copies: 3,
-        location: "Estante A, Prateleira 1"
-    },
-    {
-        title: "O Cortiço",
-        author: "Aluísio Azevedo",
-        publisher: "Ática",
-        edition: "2ª",
-        isbn: "9788508040414",
-        categories: ["Romance", "Naturalismo"],
-        year: 1890,
-        copies: 2,
-        location: "Estante A, Prateleira 2"
-    },
-    {
-        title: "Grande Sertão: Veredas",
-        author: "Guimarães Rosa",
-        publisher: "Nova Fronteira",
-        edition: "1ª",
-        isbn: "9788535908770",
-        categories: ["Romance", "Literatura Brasileira"],
-        year: 1956,
-        copies: 1,
-        location: "Estante B, Prateleira 1"
-    },
-    {
-        title: "Capitães da Areia",
-        author: "Jorge Amado",
-        publisher: "Companhia das Letras",
-        edition: "3ª",
-        isbn: "9788535914063",
-        categories: ["Romance", "Drama"],
-        year: 1937,
-        copies: 4,
-        location: "Estante B, Prateleira 3"
-    },
-    {
-        title: "Memórias Póstumas de Brás Cubas",
-        author: "Machado de Assis",
-        publisher: "Companhia das Letras",
-        edition: "1ª",
-        isbn: "9788544001073",
-        categories: ["Romance", "Realismo"],
-        year: 1881,
-        copies: 2,
-        location: "Estante A, Prateleira 1"
+// Carregar livros ao iniciar a página
+async function carregarLivros() {
+    try {
+        const response = await fetch('/api/books/');
+        const livros = await response.json();
+        
+        // Limpar tabela
+        document.getElementById('booksTableBody').innerHTML = '';
+        booksData = livros;
+        
+        // Adicionar cada livro na tabela
+        livros.forEach(livro => {
+            addBook(livro);
+        });
+        
+        // Atualizar totais
+        atualizarTotais();
+    } catch (error) {
+        console.error('Erro ao carregar livros:', error);
+        alert('Erro ao carregar livros. Tente novamente.');
     }
-];
-
-livros.forEach(livro => {
-    addBook(livro);
-});
-
-const totalCopies = livros.reduce((sum, livro) => sum + (livro.copies || 0), 0);
-total_books.textContent = totalCopies;
-total_available.textContent = totalCopies; 
-total_borrowed.textContent = 0;
-// FIM-DELETE
-
-// Verifica se o usuário está logado
-if (!usuarioLogado) {
-    alert('Você precisa fazer login primeiro!');
-    window.location.href = 'index.html';
 }
+
+function atualizarTotais() {
+    let totalExemplares = 0;
+    let totalEmprestados = 0;
+    
+    booksData.forEach(livro => {
+        totalExemplares += livro.exemplares_totais || 0;
+        totalEmprestados += livro.exemplares_emprestados || 0;
+    });
+    
+    total_books.textContent = totalExemplares;
+    total_available.textContent = totalExemplares - totalEmprestados;
+    total_borrowed.textContent = totalEmprestados;
+}
+
+// Carregar livros quando a página é carregada
+carregarLivros();
 
 // Ajusta a interface com base no papel do usuário
 const addBookBtn = document.getElementById('addBookBtn');
 const openReadersBtn = document.getElementById('openReadersBtn');
 const openBorrowsBtn = document.getElementById('borrowsBtn');
-if(usuarioLogado.role === 'Funcionario') {
+if(usuarioLogado.role === 'funcionario') {
     openBorrowsBtn.style.display = 'none';
 } else {
     addBookBtn.style.display = 'none';
@@ -134,52 +101,40 @@ function openAddBookModal() {
 
 function addBook(bookData)
 {
-    // DELETE
-    const temp = {
-        ...bookData,
-        availableCopies: bookData.copies || 0,
-        borrowedCopies: 0,
-        totalCopies: bookData.copies || 0
-    };
-    const bookIndex = booksData.length;
-    booksData.push(temp);
-    // FIM-DELETE
-
-    const actionColumn = usuarioLogado.role === 'Funcionario' ? `
+    const actionColumn = usuarioLogado.role === 'funcionario' ? `
         <td class="actions" onclick="event.stopPropagation()">
-            <button class="btn-icon" onclick="editBook()">
+            <button class="btn-icon" onclick="editBook(${bookData.id})">
                 <i class="fas fa-pen"></i>
             </button>
-            <button class="btn-icon" onclick="deleteBook()">
+            <button class="btn-icon" onclick="deleteBook(${bookData.id})">
                 <i class="fas fa-trash"></i>
             </button>
         </td>` : '';
     
     const row = document.createElement('tr');
-    row.dataset.bookIndex = bookIndex; // Armazena o índice no elemento
+    row.dataset.bookId = bookData.id;
     row.onclick = function(e) {
-        // Não abre o modal se clicar nos botões de ação
         if (!e.target.closest('.actions')) {
-            const index = parseInt(this.dataset.bookIndex);
-            showBookDetails(index);
+            showBookDetails(bookData.id);
         }
     };
     
+    const exemplares_disponiveis = bookData.exemplares_totais - bookData.exemplares_emprestados;
+    
     row.innerHTML = `
-        <td>${bookData.title}</td>
-        <td>${bookData.author}</td>
-        <td>${bookData.publisher}</td>
-        <td>${bookData.edition}</td>
+        <td>${bookData.titulo}</td>
+        <td>${bookData.autor}</td>
+        <td>${bookData.editora}</td>
+        <td>${bookData.edicao}</td>
+        <td>${Array.isArray(bookData.categorias) ? bookData.categorias.join(", ") : bookData.categorias}</td>
+        <td>${bookData.ano || '-'}</td>
+        <td>${exemplares_disponiveis}</td>
+        <td>${bookData.localizacao}</td>
         <td>${bookData.isbn || '-'}</td>
-        <td>${Array.isArray(bookData.categories) ? bookData.categories.join(", ") : bookData.categories}</td>
-        <td>${bookData.year}</td>
-        <td>${bookData.copies || 0}</td>
-        <td>${bookData.location}</td>
         ${actionColumn}
     `;
     
     document.getElementById('booksTableBody').appendChild(row);
-    total_books.textContent = parseInt(total_books.textContent) + 1; // DELETE
 }
 
 async function handleAddBook(event) {

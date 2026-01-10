@@ -7,9 +7,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>ATLAS</title>
+    <!-- Dados do usuário logado vindos do Flask -->
+    <script id="usuario-data" type="application/json">
+        {{ usuario | tojson }}
+    </script>
 </head>
 
 <body>
+    
     <div class="container">
         <header class="header">
             <div class="logo">
@@ -70,11 +75,11 @@
                         <th>Autor</th>
                         <th>Editora</th>
                         <th>Edição</th>
-                        <th>ISBN</th>
                         <th>Categoria</th>
                         <th>Ano</th>
                         <th>Exemplares</th>
                         <th>Localização</th>
+                        <th>ISBN</th>
                         <th class="actions">Ações</th>
                     </tr>
                 </thead>

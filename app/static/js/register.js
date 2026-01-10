@@ -58,6 +58,7 @@ async function handleRegister(event)
     const matricula = document.getElementById('matricula').value;
     const senha = document.getElementById('senha').value;
     const confirmarSenha = document.getElementById('confirmar_senha').value;
+    const role = document.getElementById('role').value;
 
     if (!validarCPF(cpf)) {
         alert('CPF inválido! Verifique o número digitado.');
@@ -69,10 +70,38 @@ async function handleRegister(event)
         return;
     }
 
-    // TO-DO: Enviar dados para a base de dados
+    if (!role) {
+        alert('Por favor, selecione o tipo de usuário.');
+        return;
+    }
 
-    alert('Registro realizado com sucesso! Você já pode fazer login.');
-    window.location.href = 'index.html';
-    
-    document.getElementById('registerForm').reset();
+    try {
+        // Enviar dados para o backend
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nome,
+                cpf,
+                email,
+                matricula,
+                senha,
+                role
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            alert('Registro realizado com sucesso! Você já pode fazer login.');
+            window.location.href = '/';
+        } else {
+            alert(data.message || 'Erro ao realizar cadastro. Tente novamente.');
+        }
+    } catch (error) {
+        console.error('Erro ao fazer cadastro:', error);
+        alert('Erro ao conectar com o servidor. Tente novamente.');
+    }
 }
