@@ -32,16 +32,20 @@ async function carregarLeitores() {
         const response = await fetch('/api/usuarios');
         
         if (response.ok) {
-            readersData = await response.json();
+            const result = await response.json();
             
-            // Limpar tabela
-            const tableBody = document.getElementById('readersTableBody');
-            tableBody.innerHTML = '';
-            
-            // Adicionar cada leitor na tabela
-            readersData.forEach(reader => {
-                addReaderRow(reader);
-            });
+            if (result.success) {
+                readersData = result.usuarios;
+                
+                // Limpar tabela
+                const tableBody = document.getElementById('readersTableBody');
+                tableBody.innerHTML = '';
+                
+                // Adicionar cada leitor na tabela
+                readersData.forEach(reader => {
+                    addReaderRow(reader);
+                });
+            }
         } else {
             console.error('Erro ao carregar leitores');
             alert('Erro ao carregar lista de leitores.');

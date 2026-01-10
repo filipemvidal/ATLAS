@@ -63,8 +63,8 @@
       },
       {
         "livro_id": 2,
-        "data_emprestimo": "2026-01-15",
-        "data_devolucao_prevista": "2026-01-24",
+        "data_emprestimo": "2026-01-01",
+        "data_devolucao_prevista": "2026-01-29",
         "status": "ativo",
         "data_devolucao_real": null,
         "debito_pago": 0.0
@@ -75,6 +75,14 @@
         "data_devolucao_prevista": "2026-01-05",
         "status": "devolvido",
         "data_devolucao_real": "2026-01-10",
+        "debito_pago": 0.0
+      },
+      {
+        "livro_id": 7,
+        "data_emprestimo": "2025-12-10",
+        "data_devolucao_prevista": "2025-12-24",
+        "status": "em atraso",
+        "data_devolucao_real": null,
         "debito_pago": 0.0
       }
     ]

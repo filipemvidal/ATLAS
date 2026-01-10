@@ -32,9 +32,9 @@ def readers():
 
 @bp.route('/borrows')
 def borrows():
-    """Página de gerenciamento de empréstimos"""
+    """Página de empréstimos do leitor (Meus Empréstimos)"""
     # Verifica se o usuário está logado
     if 'usuario_logado' not in session:
         return redirect(url_for('main.index'))
     
-    return render_template('borrows.html', usuario=session['usuario_logado'])
+    return render_template('borrows.html', usuario_logado=session['usuario_logado'])

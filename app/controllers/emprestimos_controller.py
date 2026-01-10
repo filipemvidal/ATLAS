@@ -414,6 +414,77 @@ def reservar_livro():
         'posicao_fila': posicao_fila
     })
 
+@bp.route('/cancelar-reserva', methods=['POST'])
+def cancelar_reserva():
+    """Cancela uma reserva de livro"""
+    # Verificar autenticação
+    if 'usuario_logado' not in session:
+        return jsonify({'success': False, 'message': 'Não autenticado'}), 401
+    
+    usuario_logado = session['usuario_logado']
+    
+    data = request.get_json()
+    cpf_leitor = data.get('cpf_leitor')
+    livro_id = data.get('livro_id')
+    
+    if not cpf_leitor or not livro_id:
+        return jsonify({'success': False, 'message': 'CPF do leitor e ID do livro são obrigatórios'}), 400
+    
+    # Verificar se o usuário está tentando cancelar sua própria reserva ou se é funcionário
+    if usuario_logado.get('role') != 'funcionario' and usuario_logado.get('cpf') != cpf_leitor:
+        return jsonify({'success': False, 'message': 'Você só pode cancelar suas próprias reservas'}), 403
+    
+    # Carregar dados
+    usuarios = carregar_usuarios()
+    livros = carregar_livros()
+    
+    # Encontrar o leitor
+    leitor = None
+    leitor_index = None
+    for i, usuario in enumerate(usuarios):
+        if usuario.get('cpf') == cpf_leitor:
+            leitor = usuario
+            leitor_index = i
+            break
+    
+    if not leitor:
+        return jsonify({'success': False, 'message': 'Leitor não encontrado'}), 404
+    
+    # Encontrar o livro
+    livro = None
+    livro_index = None
+    for i, l in enumerate(livros):
+        if l.get('id') == livro_id:
+            livro = l
+            livro_index = i
+            break
+    
+    if not livro:
+        return jsonify({'success': False, 'message': 'Livro não encontrado'}), 404
+    
+    # Verificar se o leitor tem reserva deste livro
+    if 'reservas' not in leitor or livro_id not in leitor['reservas']:
+        return jsonify({'success': False, 'message': 'Você não possui reserva para este livro'}), 404
+    
+    # Remover da lista de reservas do leitor
+    leitor['reservas'].remove(livro_id)
+    
+    # Remover da fila de reservas do livro
+    if 'fila_reservas' in livro:
+        livro['fila_reservas'] = [r for r in livro['fila_reservas'] if r.get('cpf_leitor') != cpf_leitor]
+    
+    # Salvar alterações
+    usuarios[leitor_index] = leitor
+    livros[livro_index] = livro
+    salvar_usuarios(usuarios)
+    salvar_livros(livros)
+    
+    return jsonify({
+        'success': True,
+        'message': 'Reserva cancelada com sucesso',
+        'livro': livro.get('titulo')
+    })
+
 @bp.route('/devolver', methods=['POST'])
 def devolver_livro():
     """Registra a devolução de um livro emprestado"""
@@ -661,16 +732,16 @@ def renovar_emprestimo():
     
     usuario_logado = session['usuario_logado']
     
-    # Verificar se é funcionário
-    if usuario_logado.get('role') != 'funcionario':
-        return jsonify({'success': False, 'message': 'Apenas funcionários podem renovar empréstimos'}), 403
-    
     data = request.get_json()
     cpf_leitor = data.get('cpf_leitor')
     livro_id = data.get('livro_id')
     
     if not cpf_leitor or not livro_id:
         return jsonify({'success': False, 'message': 'CPF do leitor e ID do livro são obrigatórios'}), 400
+    
+    # Verificar se o usuário está tentando renovar seu próprio empréstimo ou se é funcionário
+    if usuario_logado.get('role') != 'funcionario' and usuario_logado.get('cpf') != cpf_leitor:
+        return jsonify({'success': False, 'message': 'Você só pode renovar seus próprios empréstimos'}), 403
     
     # Carregar dados
     usuarios = carregar_usuarios()
@@ -730,7 +801,7 @@ def renovar_emprestimo():
         }), 400
     
     # Calcular nova data de devolução (mais 14 dias a partir de hoje)
-    nova_data_devolucao = data_atual + timedelta(days=DIAS_EMPRESTIMO)
+    nova_data_devolucao = data_devolucao_prevista + timedelta(days=DIAS_EMPRESTIMO)
     
     # Atualizar empréstimo
     leitor['emprestimos'][emprestimo_index]['data_devolucao_prevista'] = nova_data_devolucao.strftime('%Y-%m-%d')

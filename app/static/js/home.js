@@ -595,5 +595,11 @@ async function reserveBook() {
 }
 
 function openBorrowsPage() {
-    window.location.href = 'borrows.html';
+    window.location.href = '/borrows';
+}
+
+function logout() {
+    if (confirm('Deseja realmente sair?')) {
+        window.location.href = '/logout';
+    }
 }

@@ -5,62 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/borrows.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <title>ATLAS | Gerenciar Leitores</title>
+    <title>ATLAS | Meus Empréstimos</title>
 </head>
 <body>
+    <!-- Dados do usuário logado (injetado pelo Flask) -->
+    <script id="usuario-data" type="application/json">{{ usuario_logado | tojson }}</script>
+
     <div class="container">
         <header class="header">
             <div class="logo">
                 <h1>ATLAS</h1>
-                <p>Gerencie o acervo da sua biblioteca</p>
+                <p>Meus Empréstimos e Reservas</p>
             </div>
             <div class="header-buttons">
+                <button class="btn-secondary" onclick="window.location.href='/home'">
+                    <i class="fa fa-home"></i> Voltar
+                </button>
                 <button class="btn-icon" id="sign-out" onclick="logout()">
-                    <i class="	fa fa-sign-out"></i>
+                    <i class="fa fa-sign-out"></i>
                 </button>
             </div>
         </header>
 
-        <input type="text" class="search-bar" placeholder="Buscar por Nome, CPF, Email ou Matrícula"
-            onkeyup="filterBorrows(this.value)">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('ativos')">Empréstimos Ativos</button>
+            <button class="tab-btn" onclick="showTab('historico')">Histórico</button>
+            <button class="tab-btn" onclick="showTab('reservas')">Minhas Reservas</button>
+        </div>
 
-        <div class="borrows-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Autor</th>
-                        <th>Edição</th>
-                        <th>ISBN</th>
-                        <th>Data de empréstimo</th>
-                        <th>Data de devolução</th>
-                        <th>Status</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody class="table-body" id="borrowsTableBody">
+        <!-- Aba Empréstimos Ativos -->
+        <div class="tab-content" id="tab-ativos">
+            <input type="text" class="search-bar" placeholder="Buscar por título, autor ou ISBN"
+                onkeyup="filterTable(this.value, 'borrowsTableBody')">
+            
+            <div class="summary-cards">
+                <div class="card">
+                    <div class="card-icon" style="background: #4CAF50;">
+                        <i class="fa fa-check-circle"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="total-ativos">0</h3>
+                        <p>Em dia</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon" style="background: #FF9800;">
+                        <i class="fa fa-clock"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="total-atraso">0</h3>
+                        <p>Em atraso</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon" style="background: #F44336;">
+                        <i class="fa fa-dollar"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="total-debito">R$ 0,00</h3>
+                        <p>Débito total</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="borrows-table">
+                <table>
+                    <thead>
                         <tr>
-                            <td>Cronicas</td>
-                            <td>Gabriel García Márquez</td>
-                            <td>1ª Edição</td>
-                            <td>978-3-16-148410-0</td>
-                            <td>01/06/2024</td>
-                            <td>15/06/2024</td>
-                            <td>Empréstimo Ativo</td>
-                            <td><button class="btn-primary btn-sm">Renovar</button></td>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th>Data de Empréstimo</th>
+                            <th>Data de Devolução</th>
+                            <th>Status</th>
+                            <th>Débito</th>
+                            <th>Ações</th>
                         </tr>
+                    </thead>
+                    <tbody class="table-body" id="borrowsTableBody">
                         <tr>
-                            <td>Ablublebe</td>
-                            <td>Gabriel García Márquez</td>
-                            <td>1ª Edição</td>
-                            <td>978-3-16-148410-0</td>
-                            <td>01/06/2024</td>
-                            <td>15/06/2024</td>
-                            <td>Empréstimo Ativo</td>
-                            <td><button class="btn-primary btn-sm">Renovar</button></td>
+                            <td colspan="7" class="empty-message">Carregando...</td>
                         </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Aba Histórico -->
+        <div class="tab-content" id="tab-historico" style="display: none;">
+            <input type="text" class="search-bar" placeholder="Buscar por título, autor ou ISBN"
+                onkeyup="filterTable(this.value, 'historyTableBody')">
+
+            <div class="borrows-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th>Data de Empréstimo</th>
+                            <th>Data de Devolução Prevista</th>
+                            <th>Data de Devolução Real</th>
+                            <th>Status</th>
+                            <th>Débito Pago</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body" id="historyTableBody">
+                        <tr>
+                            <td colspan="7" class="empty-message">Carregando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Aba Reservas -->
+        <div class="tab-content" id="tab-reservas" style="display: none;">
+            <input type="text" class="search-bar" placeholder="Buscar por título ou autor"
+                onkeyup="filterTable(this.value, 'reservasTableBody')">
+
+            <div class="borrows-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Autor</th>
+                            <th>Data da Reserva</th>
+                            <th>Posição na Fila</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-body" id="reservasTableBody">
+                        <tr>
+                            <td colspan="5" class="empty-message">Carregando...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 

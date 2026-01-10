@@ -146,7 +146,10 @@ def listar_usuarios():
         usuario_copia.pop('senha', None)
         usuarios_sem_senha.append(usuario_copia)
     
-    return jsonify(usuarios_sem_senha)
+    return jsonify({
+        'success': True,
+        'usuarios': usuarios_sem_senha
+    })
 
 @bp.route('/usuarios/<string:cpf>', methods=['DELETE'])
 def deletar_usuario(cpf):
