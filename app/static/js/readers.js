@@ -1,72 +1,37 @@
 const readerModal = document.getElementById('readerDetailsModal');
 const bookModal = document.getElementById('bookDetailsModal');
 
-// DELETE
-const usuarios = [{
-        nome: "Alexandre",
-        cpf:"12345678909",
-        email: "alexandre@gmail.com",
-        matricula: "202365001",
-        password: "1234",
-        role: "Funcionario",
-        emprestimos: [
-            {
-                titulo: "Clean Code",
-                isbn: "978-0132350884",
-                autor: "Robert C. Martin",
-                editora: "Prentice Hall",
-                edicao: "1ª",
-                categorias: "Programação",
-                ano: "2008",
-                localizacao: "Estante A3",
-                exemplar: "07",
-                dataEmprestimo: "11/02/2025",
-                dataDevolucao: "17/02/2025",
-                status: "Ativo",
-                totalAPagar: "R$ 0,00"
-            }
-        ]
-    },{
-        nome: "Ana",
-        cpf:"76841799003",
-        email: "ana@gmail.com",
-        matricula: "202365002",
-        password: "1234",
-        role: "Professor",
-        emprestimos: [
-            {
-                titulo: "Design Patterns",
-                isbn: "978-0201633610",
-                autor: "Gang of Four",
-                editora: "Addison-Wesley",
-                edicao: "1ª",
-                categorias: "Arquitetura de Software",
-                ano: "1994",
-                localizacao: "Estante B2",
-                exemplar: "03",
-                dataEmprestimo: "05/01/2026",
-                dataDevolucao: "20/01/2026",
-                status: "Em atraso",
-                totalAPagar: "R$ 15,00"
-            }
-        ]
-    },{
-        nome: "Carlos",
-        cpf:"77183381005",
-        email: "carlos@gmail.com",
-        matricula: "202365003",
-        password: "1234",
-        role: "Aluno",
-        emprestimos: []
+let readersData = [];
+
+// Carregar leitores ao inicializar a página
+window.addEventListener('DOMContentLoaded', async () => {
+    await carregarLeitores();
+});
+
+async function carregarLeitores() {
+    try {
+        const response = await fetch('/api/usuarios');
+        
+        if (response.ok) {
+            readersData = await response.json();
+            
+            // Limpar tabela
+            const tableBody = document.getElementById('readersTableBody');
+            tableBody.innerHTML = '';
+            
+            // Adicionar cada leitor na tabela
+            readersData.forEach(reader => {
+                addReaderRow(reader);
+            });
+        } else {
+            console.error('Erro ao carregar leitores');
+            alert('Erro ao carregar lista de leitores.');
+        }
+    } catch (error) {
+        console.error('Erro ao conectar com o servidor:', error);
+        alert('Erro ao conectar com o servidor.');
     }
-];
-
-for (const usuario of usuarios) {
-    addReaderRow(usuario);
 }
-// FIM-DELETE
-
-// TO-DO: Carregar leitores da base de dados
 
 // Funções de gerenciamento de modais
 function openModal(modal){
@@ -117,11 +82,20 @@ function addReaderRow(reader)
     
     row.style.cursor = 'pointer';
     
+    // Traduzir role para português
+    const tipoMap = {
+        'funcionario': 'Funcionário',
+        'estudante': 'Estudante',
+        'professor': 'Professor'
+    };
+    const tipoFormatado = tipoMap[reader.role] || reader.role;
+    
     row.innerHTML = `
         <td>${reader.nome}</td>
         <td>${reader.cpf}</td>
         <td>${reader.email}</td>
         <td>${reader.matricula}</td>
+        <td>${tipoFormatado}</td>
     `;
     
     row.addEventListener('click', function() {
@@ -132,10 +106,19 @@ function addReaderRow(reader)
 }
 
 function showReaderDetails(reader) {
+    // Traduzir role para português
+    const tipoMap = {
+        'funcionario': 'Funcionário',
+        'estudante': 'Estudante',
+        'professor': 'Professor'
+    };
+    const tipoFormatado = tipoMap[reader.role] || reader.role;
+    
     document.getElementById('detail-name').textContent = reader.nome;
     document.getElementById('detail-cpf').textContent = reader.cpf;
     document.getElementById('detail-email').textContent = reader.email;
     document.getElementById('detail-matricula').textContent = reader.matricula;
+    document.getElementById('detail-tipo').textContent = tipoFormatado;
     
     // Popula a tabela de empréstimos
     const borrowedTableBody = document.querySelector('#readerDetailsModal .borrowed-table tbody');
@@ -184,8 +167,44 @@ function showBookDetails(emprestimo) {
     openModal(bookModal);
 }
 
-function deleteReader() {
-    // Função para deletar leitor (a ser implementada)
+async function deleteReader() {
+    // Obter CPF do leitor a partir do modal
+    const cpf = document.getElementById('detail-cpf').textContent;
+    
+    if (!cpf) {
+        alert('Erro: CPF do leitor não encontrado.');
+        return;
+    }
+    
+    if (!confirm('Tem certeza que deseja excluir este leitor?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/usuarios/${cpf}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Fechar modal
+            closeModal(readerModal);
+            
+            // Recarregar lista de leitores
+            await carregarLeitores();
+            
+            alert('Usuário excluído com sucesso!');
+        } else {
+            alert(result.message || 'Erro ao excluir usuário.');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir usuário:', error);
+        alert('Erro ao conectar com o servidor.');
+    }
 }
 
 function registerReturn () {

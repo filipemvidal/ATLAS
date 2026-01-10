@@ -109,6 +109,67 @@ def get_usuario():
     else:
         return jsonify({'error': 'Não autenticado'}), 401
 
+@bp.route('/usuarios', methods=['GET'])
+def listar_usuarios():
+    """Lista todos os usuários (sem senhas)"""    
+    usuarios = carregar_usuarios()
+    
+    # Remover senhas antes de enviar
+    usuarios_sem_senha = []
+    for usuario in usuarios:
+        usuario_copia = usuario.copy()
+        usuario_copia.pop('senha', None)
+        usuarios_sem_senha.append(usuario_copia)
+    
+    return jsonify(usuarios_sem_senha)
+
+@bp.route('/usuarios/<string:cpf>', methods=['DELETE'])
+def deletar_usuario(cpf):
+    """Deleta um usuário com validações"""
+    # Verificar se há usuário logado
+    if 'usuario_logado' not in session:
+        return jsonify({'success': False, 'message': 'Não autenticado'}), 401
+    
+    usuario_logado = session['usuario_logado']
+    
+    # Validação 1: Não pode deletar o próprio perfil
+    if usuario_logado.get('cpf') == cpf:
+        return jsonify({
+            'success': False, 
+            'message': 'Você não pode deletar seu próprio perfil'
+        }), 400
+    
+    usuarios = carregar_usuarios()
+    
+    # Encontrar o usuário a ser deletado
+    usuario_index = None
+    usuario_a_deletar = None
+    for i, usuario in enumerate(usuarios):
+        if usuario.get('cpf') == cpf:
+            usuario_index = i
+            usuario_a_deletar = usuario
+            break
+    
+    if usuario_index is None:
+        return jsonify({'success': False, 'message': 'Usuário não encontrado'}), 404
+    
+    # Validação 2: Sempre deve haver pelo menos um funcionário
+    if usuario_a_deletar.get('role') == 'funcionario':
+        # Contar quantos funcionários existem
+        total_funcionarios = sum(1 for u in usuarios if u.get('role') == 'funcionario')
+        
+        if total_funcionarios <= 1:
+            return jsonify({
+                'success': False, 
+                'message': 'Não é possível deletar o último funcionário do sistema'
+            }), 400
+    
+    # Remover usuário
+    usuarios.pop(usuario_index)
+    salvar_usuarios(usuarios)
+    
+    return jsonify({'success': True, 'message': 'Usuário deletado com sucesso'})
+
 @bp.route('/logout', methods=['POST'])
 def logout():
     """Faz logout do usuário"""

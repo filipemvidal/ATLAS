@@ -32,6 +32,7 @@
                         <th>CPF</th>
                         <th>Email</th>
                         <th>Matrícula</th>
+                        <th>Tipo</th>
                     </tr>
                 </thead>
                 <tbody class="table-body" id="readersTableBody"></tbody>
@@ -60,6 +61,10 @@
                     <div class="detail-item">
                         <span class="detail-label">Matrícula:</span>
                         <span class="detail-value" id="detail-matricula"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Tipo:</span>
+                        <span class="detail-value" id="detail-tipo"></span>
                     </div>
                 </div>
                 
@@ -93,7 +98,7 @@
                 <div class="modal-footer" id="details-modal-footer">
                     <button class="btn-primary" onclick="deleteReader()">
                         <i class="fas fa-trash"></i>
-                        Excluir Leitor
+                        Excluir Usuário
                     </button>
                 </div>
         </div>
