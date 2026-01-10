@@ -159,5 +159,21 @@
     "localizacao": "Estante C, Prateleira 3",
     "exemplares_totais": 2,
     "exemplares_emprestados": 0
+  },
+  {
+    "id": 11,
+    "titulo": "Dom Casmurro",
+    "autor": "Machado de Asiis",
+    "editora": "Companhia das Letras",
+    "edicao": "2ª",
+    "isbn": "9788544001081",
+    "categorias": [
+      "Romance",
+      "Literatura Brasileira"
+    ],
+    "ano": 1901,
+    "localizacao": "Estante A, Prateleira 2",
+    "exemplares_totais": 7,
+    "exemplares_emprestados": 0
   }
 ]

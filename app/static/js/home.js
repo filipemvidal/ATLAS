@@ -140,26 +140,71 @@ function addBook(bookData)
 async function handleAddBook(event) {
     event.preventDefault();
     
-    // TO-DO: Adicionar livro na base de dados
-
-    // DELETE
+    // Coletar dados do formulário
     const formData = {
-        title: document.getElementById('title').value,
-        author: document.getElementById('author').value,
-        publisher: document.getElementById('publisher').value ,
-        edition: document.getElementById('edition').value ,
-        isbn: document.getElementById('isbn').value || '-',
-        categories: document.getElementById('categories').value.split(',').map(cat => cat.trim()),
-        year: parseInt(document.getElementById('year').value) || new Date().getFullYear(),
-        copies: parseInt(document.getElementById('copies').value) || 1,
-        location: document.getElementById('location').value
+        titulo: document.getElementById('title').value.trim(),
+        autor: document.getElementById('author').value.trim(),
+        editora: document.getElementById('publisher').value.trim(),
+        edicao: document.getElementById('edition').value.trim(),
+        isbn: document.getElementById('isbn').value.trim(),
+        categorias: document.getElementById('categories').value.split(',').map(cat => cat.trim()).filter(cat => cat !== ''),
+        ano: parseInt(document.getElementById('year').value) || null,
+        localizacao: document.getElementById('location').value.trim(),
+        exemplares_totais: parseInt(document.getElementById('copies').value) || 1
     };
-    console.log('Adding book with data:', formData);
-    // FIM-DELETE
-
-    addBook(formData);
-    document.getElementById("addBookForm").reset();
-    closeModal(add_modal);
+    
+    // Validar campos obrigatórios
+    if (!formData.titulo || !formData.autor || !formData.editora || !formData.edicao || !formData.localizacao) {
+        alert('Por favor, preencha todos os campos obrigatórios.');
+        return;
+    }
+    
+    // Verificar se o livro já existe (por ISBN ou título+autor)
+    const livroExistente = booksData.find(livro => {
+        // Se ambos têm ISBN, comparar por ISBN
+        if (formData.isbn && livro.isbn && formData.isbn === livro.isbn) {
+            return true;
+        }
+        // Caso contrário, comparar por título, autor, editora e edição
+        return livro.titulo.toLowerCase() === formData.titulo.toLowerCase() && 
+               livro.autor.toLowerCase() === formData.autor.toLowerCase() &&
+               livro.editora.toLowerCase() === formData.editora.toLowerCase() &&
+               livro.edicao.toLowerCase() === formData.edicao.toLowerCase();
+    });
+    
+    if (livroExistente) {
+        alert('Este livro já está cadastrado na base de dados!');
+        return;
+    }
+    
+    try {
+        // Enviar requisição POST para adicionar o livro
+        const response = await fetch('/api/books/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            // Recarregar lista de livros da API
+            await carregarLivros();
+            
+            // Fechar modal e limpar formulário
+            closeModal(add_modal);
+            document.getElementById('addBookForm').reset();
+            
+            alert('Livro adicionado com sucesso!');
+        } else {
+            alert('Erro ao adicionar livro: ' + (result.message || 'Erro desconhecido'));
+        }
+    } catch (error) {
+        console.error('Erro ao adicionar livro:', error);
+        alert('Erro ao conectar com o servidor.');
+    }
 }
 
 function filterBooks(query) {
@@ -256,32 +301,40 @@ async function handleEditBook(event) {
     }
 }
 
-function deleteBook() {
+async function deleteBook(bookId) {
     if (confirm('Tem certeza que deseja excluir este livro?')) {
+        // Encontrar a linha antes de deletar para aplicar animação
         const row = event.target.closest('tr');
         
-        if (row) {
-            // DELETE
-            const bookIndex = parseInt(row.dataset.bookIndex);
-            const bookData = booksData[bookIndex];
-            // FIM-DELETE
+        try {
+            // Deletar do banco de dados via API
+            const response = await fetch(`/api/books/${bookId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             
-            row.style.transition = 'opacity 0.3s';
-            row.style.opacity = '0';
+            const result = await response.json();
             
-            setTimeout(() => {
-                row.remove();
-                // DELETE
-                booksData[bookIndex] = null; // Marca como null ao invés de remover para manter os índices
-                console.log('Livro deletado');
-                // FIM-DELETE
-            }, 300);
-            
-            // DELETE
-            total_books.textContent = parseInt(total_books.textContent) - bookData.totalCopies;
-            total_available.textContent = parseInt(total_available.textContent) - bookData.availableCopies;
-            total_borrowed.textContent = parseInt(total_borrowed.textContent) - bookData.borrowedCopies;
-            // FIM-DELETE
+            if (response.ok) {
+                // Aplicar animação de fade out
+                if (row) {
+                    row.style.transition = 'opacity 0.8s';
+                    row.style.opacity = '0';
+                    
+                    setTimeout(async () => {
+                        // Recarregar lista de livros da API
+                        await carregarLivros();
+                    }, 300);
+                }
+                alert('Livro excluído com sucesso!');
+            } else {
+                alert('Erro ao excluir livro: ' + (result.message || 'Erro desconhecido'));
+            }
+        } catch (error) {
+            console.error('Erro ao excluir livro:', error);
+            alert('Erro ao conectar com o servidor.');
         }
     }
 }
