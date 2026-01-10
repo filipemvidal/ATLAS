@@ -5,7 +5,9 @@
     "email": "joao.silva@ufjf.br",
     "matricula": "100000001",
     "senha": "1234",
-    "role": "funcionario"
+    "role": "funcionario",
+    "reservas": [],
+    "emprestimos": []
   },
   {
     "nome": "Maria Santos",
@@ -13,7 +15,22 @@
     "email": "maria.santos@ufjf.br",
     "matricula": "200000001",
     "senha": "1234",
-    "role": "professor"
+    "role": "professor",
+    "reservas": [
+      3
+    ],
+    "emprestimos": [
+      {
+        "livro_id": 8,
+        "data_emprestimo": "2026-01-10",
+        "data_devolucao_prevista": "2026-01-24"
+      },
+      {
+        "livro_id": 1,
+        "data_emprestimo": "2026-01-10",
+        "data_devolucao_prevista": "2026-01-24"
+      }
+    ]
   },
   {
     "nome": "Pedro Oliveira",
@@ -21,6 +38,24 @@
     "email": "pedro.oliveira@estudante.ufjf.br",
     "matricula": "300000001",
     "senha": "1234",
-    "role": "estudante"
+    "role": "estudante",
+    "reservas": [],
+    "emprestimos": [
+      {
+        "livro_id": 1,
+        "data_emprestimo": "2026-01-10",
+        "data_devolucao_prevista": "2026-01-24"
+      },
+      {
+        "livro_id": 2,
+        "data_emprestimo": "2026-01-10",
+        "data_devolucao_prevista": "2026-01-24"
+      },
+      {
+        "livro_id": 3,
+        "data_emprestimo": "2026-01-10",
+        "data_devolucao_prevista": "2026-01-24"
+      }
+    ]
   }
 ]

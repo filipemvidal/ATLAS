@@ -56,7 +56,8 @@ def adicionar_livro():
         'ano': data.get('ano'),
         'localizacao': data.get('localizacao'),
         'exemplares_totais': int(data.get('exemplares_totais', 1)),
-        'exemplares_emprestados': 0
+        'exemplares_emprestados': 0,
+        'fila_reservas': [],
     }
     
     livros.append(novo_livro)

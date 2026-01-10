@@ -92,7 +92,9 @@ def register():
         'email': email,
         'matricula': matricula,
         'senha': senha,
-        'role': role
+        'role': role,
+        'reservas': [],
+        'emprestimos': []
     }
     
     # Adicionar à lista e salvar

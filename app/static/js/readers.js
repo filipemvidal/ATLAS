@@ -2,11 +2,29 @@ const readerModal = document.getElementById('readerDetailsModal');
 const bookModal = document.getElementById('bookDetailsModal');
 
 let readersData = [];
+let booksData = [];
 
-// Carregar leitores ao inicializar a página
+// Carregar leitores e livros ao inicializar a página
 window.addEventListener('DOMContentLoaded', async () => {
-    await carregarLeitores();
+    await Promise.all([
+        carregarLeitores(),
+        carregarLivros()
+    ]);
 });
+
+async function carregarLivros() {
+    try {
+        const response = await fetch('/api/books/');
+        
+        if (response.ok) {
+            booksData = await response.json();
+        } else {
+            console.error('Erro ao carregar livros');
+        }
+    } catch (error) {
+        console.error('Erro ao conectar com o servidor:', error);
+    }
+}
 
 async function carregarLeitores() {
     try {
@@ -126,19 +144,36 @@ function showReaderDetails(reader) {
     
     if (reader.emprestimos && reader.emprestimos.length > 0) {
         reader.emprestimos.forEach(emprestimo => {
+            // Buscar dados do livro pelo ID
+            const livro = booksData.find(l => l.id === emprestimo.livro_id);
+            
+            if (!livro) {
+                console.error('Livro não encontrado:', emprestimo.livro_id);
+                return;
+            }
+            
+            // Formatar datas
+            const dataEmprestimoFormatada = formatarData(emprestimo.data_emprestimo);
+            const dataDevolucaoFormatada = formatarData(emprestimo.data_devolucao_prevista);
+            
+            // Calcular status
+            const dataAtual = new Date();
+            const dataDevolucao = new Date(emprestimo.data_devolucao_prevista);
+            const status = dataAtual <= dataDevolucao ? 'Em dia' : 'Em atraso';
+            
             const row = document.createElement('tr');
             row.style.cursor = 'pointer';
             
             row.innerHTML = `
-                <td>${emprestimo.titulo}</td>
-                <td>${emprestimo.isbn}</td>
-                <td>${emprestimo.dataEmprestimo}</td>
-                <td>${emprestimo.dataDevolucao}</td>
-                <td>${emprestimo.status}</td>
+                <td>${livro.titulo}</td>
+                <td>${livro.isbn || '-'}</td>
+                <td>${dataEmprestimoFormatada}</td>
+                <td>${dataDevolucaoFormatada}</td>
+                <td style="color: ${status === 'Em atraso' ? 'red' : 'green'}">${status}</td>
             `;
             
             row.addEventListener('click', function() {
-                showBookDetails(emprestimo);
+                showBookDetailsFromReader(livro, emprestimo);
             });
             
             borrowedTableBody.appendChild(row);
@@ -150,19 +185,38 @@ function showReaderDetails(reader) {
     openModal(readerModal);
 }
 
-function showBookDetails(emprestimo) {
-    document.getElementById('detail-title').textContent = emprestimo.titulo || '';
-    document.getElementById('detail-author').textContent = emprestimo.autor || '';
-    document.getElementById('detail-publisher').textContent = emprestimo.editora || '';
-    document.getElementById('detail-edition').textContent = emprestimo.edicao || '';
-    document.getElementById('detail-isbn').textContent = emprestimo.isbn || '';
-    document.getElementById('detail-categories').textContent = emprestimo.categorias || '';
-    document.getElementById('detail-year').textContent = emprestimo.ano || '';
-    document.getElementById('detail-location').textContent = emprestimo.localizacao || '';
-    document.getElementById('detail-copie').textContent = emprestimo.exemplar || '';
-    document.getElementById('detail-borrow-date').textContent = emprestimo.dataEmprestimo || '';
-    document.getElementById('detail-return-date').textContent = emprestimo.dataDevolucao || '';
-    document.getElementById('detail-total-payable').textContent = emprestimo.totalAPagar || 'R$ 0,00';
+function formatarData(dataStr) {
+    if (!dataStr) return '-';
+    const [ano, mes, dia] = dataStr.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
+function showBookDetailsFromReader(livro, emprestimo) {
+    document.getElementById('detail-title').textContent = livro.titulo || '';
+    document.getElementById('detail-author').textContent = livro.autor || '';
+    document.getElementById('detail-publisher').textContent = livro.editora || '';
+    document.getElementById('detail-edition').textContent = livro.edicao || '';
+    document.getElementById('detail-isbn').textContent = livro.isbn || '';
+    document.getElementById('detail-categories').textContent = Array.isArray(livro.categorias) 
+        ? livro.categorias.join(', ') 
+        : livro.categorias || '';
+    document.getElementById('detail-year').textContent = livro.ano || '';
+    document.getElementById('detail-location').textContent = livro.localizacao || '';
+    
+    // Dados do empréstimo
+    document.getElementById('detail-borrow-date').textContent = formatarData(emprestimo.data_emprestimo);
+    document.getElementById('detail-return-date').textContent = formatarData(emprestimo.data_devolucao_prevista);
+    
+    // Calcular débito
+    const dataAtual = new Date();
+    const dataDevolucao = new Date(emprestimo.data_devolucao_prevista);
+    let debito = 0;
+    if (dataAtual > dataDevolucao) {
+        const diasAtraso = Math.floor((dataAtual - dataDevolucao) / (1000 * 60 * 60 * 24));
+        debito = diasAtraso * 1.0; // R$ 1,00 por dia
+    }
+    
+    document.getElementById('detail-total-payable').textContent = `R$ ${debito.toFixed(2)}`;
     
     openModal(bookModal);
 }

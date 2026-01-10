@@ -375,91 +375,222 @@ function showBookDetails(bookId) {
     // Armazena o ID do livro atual
     details_modal.dataset.currentBookId = bookId;
     
-    // Mostra/esconde o botão de empréstimo baseado na disponibilidade
-    const borrowBtn = document.getElementById('btnBorrowFromDetails');
-    if (exemplares_disponiveis > 0) {
-        borrowBtn.disabled = false;
-        borrowBtn.style.opacity = '1';
+    // Gerenciar botões baseado no role do usuário e disponibilidade
+    const borrowBtn = document.getElementById('btnBorrowFromDetails'); // Para funcionários (via CPF)
+    const borrowDirectBtn = document.getElementById('btnBorrowDirectFromDetails'); // Para leitores
+    const reserveBtn = document.getElementById('btnReserveFromDetails');
+    
+    if (usuarioLogado.role === 'funcionario') {
+        // Funcionário: mostra botão de emprestar via CPF
+        borrowBtn.style.display = 'inline-flex';
+        borrowDirectBtn.style.display = 'none';
+        reserveBtn.style.display = 'none';
+        
+        if (exemplares_disponiveis > 0) {
+            borrowBtn.disabled = false;
+            borrowBtn.style.opacity = '1';
+        } else {
+            borrowBtn.disabled = true;
+            borrowBtn.style.opacity = '0.5';
+            borrowBtn.title = 'Não há exemplares disponíveis';
+        }
     } else {
-        borrowBtn.disabled = true;
-        borrowBtn.style.opacity = '0.5';
-        borrowBtn.title = 'Não há exemplares disponíveis';
+        // Estudante/Professor: mostra botões de emprestar direto ou reservar
+        borrowBtn.style.display = 'none';
+        
+        if (exemplares_disponiveis > 0) {
+            // Há exemplares: mostra apenas botão de emprestar
+            borrowDirectBtn.style.display = 'inline-flex';
+            borrowDirectBtn.disabled = false;
+            borrowDirectBtn.style.opacity = '1';
+            reserveBtn.style.display = 'none';
+        } else {
+            // Não há exemplares: mostra apenas botão de reservar
+            borrowDirectBtn.style.display = 'none';
+            reserveBtn.style.display = 'inline-flex';
+            reserveBtn.disabled = false;
+            reserveBtn.style.opacity = '1';
+        }
     }
     
     openModal(details_modal);
 }
 
 function borrowBook() {
-    // TO-DO: Lógica de empréstimo do livro
-    // TO-DO: Buscar dados do livro a partir da base de dados
-
-    // DELETE
-    const bookIndex = parseInt(details_modal.dataset.currentBookIndex);
-    const bookData = booksData[bookIndex];
-    // FIM-DELETE
+    // Obter ID do livro do modal de detalhes
+    const bookId = parseInt(details_modal.dataset.currentBookId);
     
-    if (!bookData || bookData.availableCopies <= 0) {
+    const bookData = booksData.find(livro => livro.id === bookId);
+    
+    if (!bookData) {
+        alert('Livro não encontrado.');
+        return;
+    }
+    
+    const exemplares_disponiveis = bookData.exemplares_totais - bookData.exemplares_emprestados;
+    
+    if (exemplares_disponiveis <= 0) {
         alert('Não há exemplares disponíveis para empréstimo.');
         return;
     }
     
-    // Armazena o índice do livro para usar após o CPF ser informado
-    currentBorrowBookIndex = bookIndex; // DELETE
+    // Armazena o ID do livro para usar após o CPF ser informado
+    currentBorrowBookId = bookId;
     
     // Fecha o modal de detalhes e abre o modal de CPF
+    closeModal(details_modal);
     openModal(cpf_modal);
 }
 
-function handleBorrowWithCpf(event) {
+async function handleBorrowWithCpf(event) {
     event.preventDefault();
     
-    const cpf = document.getElementById('borrower-cpf').value;
+    const cpf = document.getElementById('borrower-cpf').value.trim();
     
-    if (!cpf || cpf.trim() === '') {
+    if (!cpf) {
         alert('Por favor, informe o CPF do leitor.');
         return;
     }
     
-    // DELETE
-    if (currentBorrowBookIndex === null) {
+    if (!currentBorrowBookId) {
         alert('Erro: livro não identificado.');
         return;
     }
-    // FIM-DELETE
     
-    // TO-DO: Verificar se o CPF é válido e se o leitor existe na base de dados
-    // TO-DO: Registrar o empréstimo na base de dados
-    
-    const bookData = booksData[currentBorrowBookIndex];
-    
-    if (bookData && bookData.availableCopies > 0) {
-        // DELETE
-        // Atualiza os dados do livro
-        bookData.availableCopies -= 1;
-        bookData.borrowedCopies += 1;
-        
-        // Atualiza a tabela (encontra a linha correspondente)
-        const rows = document.querySelectorAll('#booksTableBody tr');
-        rows.forEach(row => {
-            if (parseInt(row.dataset.bookIndex) === currentBorrowBookIndex) {
-                row.cells[7].textContent = bookData.availableCopies;
-            }
+    try {
+        const response = await fetch('/api/emprestimos/emprestar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                cpf_leitor: cpf,
+                livro_id: currentBorrowBookId
+            })
         });
         
-        // Atualiza os totais
-        total_available.textContent = parseInt(total_available.textContent) - 1;
-        total_borrowed.textContent = parseInt(total_borrowed.textContent) + 1;
-        // FIM-DELETE
+        const result = await response.json();
         
-        alert(`Livro "${bookData.title}" emprestado com sucesso para o CPF ${cpf}!`);
+        if (response.ok) {
+            alert(`Livro "${result.livro}" emprestado com sucesso para ${result.leitor}!`);
+            
+            // Recarregar lista de livros
+            await carregarLivros();
+            
+            // Limpar formulário e fechar modais
+            document.getElementById('borrowCpfForm').reset();
+            closeModal(cpf_modal);
+            currentBorrowBookId = null;
+        } else {
+            alert(result.message || 'Erro ao realizar empréstimo.');
+        }
+    } catch (error) {
+        console.error('Erro ao realizar empréstimo:', error);
+        alert('Erro ao conectar com o servidor.');
+    }
+}
+
+async function borrowBookDirect() {
+    // Obter ID do livro do modal de detalhes
+    const bookId = parseInt(details_modal.dataset.currentBookId);
+    const bookData = booksData.find(livro => livro.id === bookId);
+    
+    if (!bookData) {
+        alert('Livro não encontrado.');
+        return;
+    }
+    
+    const exemplares_disponiveis = bookData.exemplares_totais - bookData.exemplares_emprestados;
+    
+    // Empréstimo direto só é possível quando há exemplares disponíveis
+    if (exemplares_disponiveis <= 0) {
+        alert('Não há exemplares disponíveis. Você pode fazer uma reserva.');
+        return;
+    }
+    
+    if (!confirm(`Deseja emprestar o livro "${bookData.titulo}"?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/emprestimos/emprestar-direto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                livro_id: bookId
+            })
+        });
         
-        // Limpa o formulário e fecha o modal
-        document.getElementById('borrowCpfForm').reset();
-        closeModal(cpf_modal);
-        closeModal(details_modal);
-        currentBorrowBookIndex = null; // DELETE
-    } else {
-        alert('Não há exemplares disponíveis para empréstimo.');
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert(`Livro "${result.livro}" emprestado com sucesso! Data de devolução: ${result.data_devolucao}`);
+            
+            // Recarregar lista de livros
+            await carregarLivros();
+            
+            // Fechar modal
+            closeModal(details_modal);
+        } else {
+            alert(result.message || 'Erro ao realizar empréstimo.');
+        }
+    } catch (error) {
+        console.error('Erro ao realizar empréstimo:', error);
+        alert('Erro ao conectar com o servidor.');
+    }
+}
+
+async function reserveBook() {
+    // Obter ID do livro do modal de detalhes
+    const bookId = parseInt(details_modal.dataset.currentBookId);
+    const bookData = booksData.find(livro => livro.id === bookId);
+    
+    if (!bookData) {
+        alert('Livro não encontrado.');
+        return;
+    }
+    
+    const exemplares_disponiveis = bookData.exemplares_totais - bookData.exemplares_emprestados;
+    
+    // Reserva só é possível quando NÃO há exemplares disponíveis
+    if (exemplares_disponiveis > 0) {
+        alert('Há exemplares disponíveis. Você pode emprestar o livro diretamente ao invés de reservar.');
+        return;
+    }
+    
+    if (!confirm(`Deseja reservar o livro "${bookData.titulo}"? Você entrará na fila de espera.`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/emprestimos/reservar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                livro_id: bookId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            alert(`Livro "${result.livro}" reservado com sucesso! Você está na posição ${result.posicao_fila} da fila de espera.`);
+            
+            // Recarregar lista de livros
+            await carregarLivros();
+            
+            // Fechar modal
+            closeModal(details_modal);
+        } else {
+            alert(result.message || 'Erro ao realizar reserva.');
+        }
+    } catch (error) {
+        console.error('Erro ao realizar reserva:', error);
+        alert('Erro ao conectar com o servidor.');
     }
 }
 

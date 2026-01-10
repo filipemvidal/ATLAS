@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from app.controllers import main_controller, auth_controller, books_controller
+from app.controllers import main_controller, auth_controller, books_controller, emprestimos_controller
 
 app = Flask(__name__, 
             template_folder='app/views',
@@ -12,6 +12,7 @@ app.config['SECRET_KEY'] = 'your-secret-key-here'  # Alterar em produção
 app.register_blueprint(main_controller.bp)
 app.register_blueprint(auth_controller.bp)
 app.register_blueprint(books_controller.bp)
+app.register_blueprint(emprestimos_controller.bp)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
