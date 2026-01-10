@@ -16,19 +16,31 @@
     "matricula": "200000001",
     "senha": "1234",
     "role": "professor",
-    "reservas": [
-      3
-    ],
+    "reservas": [],
     "emprestimos": [
       {
         "livro_id": 8,
-        "data_emprestimo": "2026-01-10",
-        "data_devolucao_prevista": "2026-01-24"
+        "data_emprestimo": "2025-12-22",
+        "data_devolucao_prevista": "2026-01-05",
+        "status": "devolvido",
+        "data_devolucao_real": "2026-01-10",
+        "debito_pago": 5.0
       },
       {
         "livro_id": 1,
+        "data_emprestimo": "2025-12-22",
+        "data_devolucao_prevista": "2026-01-05",
+        "status": "devolvido",
+        "data_devolucao_real": "2026-01-10",
+        "debito_pago": 0.0
+      },
+      {
+        "livro_id": 3,
         "data_emprestimo": "2026-01-10",
-        "data_devolucao_prevista": "2026-01-24"
+        "data_devolucao_prevista": "2026-01-24",
+        "status": "ativo",
+        "data_devolucao_real": null,
+        "debito_pago": 0.0
       }
     ]
   },
@@ -44,17 +56,26 @@
       {
         "livro_id": 1,
         "data_emprestimo": "2026-01-10",
-        "data_devolucao_prevista": "2026-01-24"
+        "data_devolucao_prevista": "2026-01-24",
+        "status": "devolvido",
+        "data_devolucao_real": "2026-01-10",
+        "debito_pago": 0.0
       },
       {
         "livro_id": 2,
-        "data_emprestimo": "2026-01-10",
-        "data_devolucao_prevista": "2026-01-24"
+        "data_emprestimo": "2026-01-15",
+        "data_devolucao_prevista": "2026-01-24",
+        "status": "ativo",
+        "data_devolucao_real": null,
+        "debito_pago": 0.0
       },
       {
         "livro_id": 3,
-        "data_emprestimo": "2026-01-10",
-        "data_devolucao_prevista": "2026-01-24"
+        "data_emprestimo": "2025-12-22",
+        "data_devolucao_prevista": "2026-01-05",
+        "status": "devolvido",
+        "data_devolucao_real": "2026-01-10",
+        "debito_pago": 0.0
       }
     ]
   }

@@ -58,17 +58,33 @@ def calcular_debito_emprestimo(data_emprestimo_str, data_devolucao_prevista_str)
         return 0.0
 
 def calcular_debito_total(emprestimos):
-    """Calcula o débito total de todos os empréstimos de um leitor"""
+    """Calcula o débito total de todos os empréstimos de um leitor (apenas ativos e em atraso)"""
     debito_total = 0.0
     
     for emprestimo in emprestimos:
-        debito = calcular_debito_emprestimo(
-            emprestimo.get('data_emprestimo'),
-            emprestimo.get('data_devolucao_prevista')
-        )
-        debito_total += debito
+        # Só calcular débito de empréstimos ativos ou em atraso (não devolvidos)
+        if emprestimo.get('status') in ['ativo', 'em atraso']:
+            debito = calcular_debito_emprestimo(
+                emprestimo.get('data_emprestimo'),
+                emprestimo.get('data_devolucao_prevista')
+            )
+            debito_total += debito
     
     return debito_total
+
+def atualizar_status_emprestimos(emprestimos):
+    """Atualiza o status dos empréstimos ativos para 'em débito' se estiverem atrasados"""
+    data_atual = datetime.now()
+    
+    for emprestimo in emprestimos:
+        if emprestimo.get('status') == 'ativo':
+            data_devolucao_prevista = datetime.strptime(emprestimo.get('data_devolucao_prevista'), '%Y-%m-%d')
+            
+            # Se passou da data de devolução, marcar como em atraso
+            if data_atual > data_devolucao_prevista:
+                emprestimo['status'] = 'em atraso'
+    
+    return emprestimos
 
 @bp.route('/emprestar', methods=['POST'])
 def emprestar_livro():
@@ -131,18 +147,22 @@ def emprestar_livro():
     if 'emprestimos' not in leitor:
         leitor['emprestimos'] = []
     
-    # RESTRIÇÃO 1: Máximo de 3 livros emprestados
-    if len(leitor['emprestimos']) >= MAX_LIVROS_EMPRESTADOS:
-        return jsonify({'success': False, 'message': f'O leitor já possui {MAX_LIVROS_EMPRESTADOS} livros emprestados. Limite máximo atingido.'}), 400
+    # Atualizar status dos empréstimos (ativo -> em débito se atrasado)
+    leitor['emprestimos'] = atualizar_status_emprestimos(leitor['emprestimos'])
+    
+    # RESTRIÇÃO 1: Máximo de 3 livros emprestados (ativos ou em débito)
+    emprestimos_nao_finalizados = [e for e in leitor['emprestimos'] if e.get('status') in ['ativo', 'em débito']]
+    if len(emprestimos_nao_finalizados) >= MAX_LIVROS_EMPRESTADOS:
+        return jsonify({'success': False, 'message': f'O leitor já possui {len(emprestimos_nao_finalizados)} livros emprestados. Limite máximo atingido.'}), 400
     
     # RESTRIÇÃO 2: Débito não pode superar R$ 10,00
     debito_atual = calcular_debito_total(leitor['emprestimos'])
     if debito_atual >= MAX_DEBITO:
         return jsonify({'success': False, 'message': f'O leitor possui débito de R$ {debito_atual:.2f}. O débito não pode superar R$ {MAX_DEBITO:.2f} para novos empréstimos.'}), 400
     
-    # Verificar se o leitor já tem este livro emprestado
+    # Verificar se o leitor já tem este livro emprestado (ativo ou em atraso)
     for emp in leitor['emprestimos']:
-        if emp.get('livro_id') == livro_id:
+        if emp.get('livro_id') == livro_id and emp.get('status') in ['ativo', 'em atraso']:
             return jsonify({'success': False, 'message': 'Este leitor já possui um exemplar deste livro emprestado'}), 400
     
     # Calcular datas
@@ -153,7 +173,10 @@ def emprestar_livro():
     emprestimo = {
         'livro_id': livro_id,
         'data_emprestimo': data_emprestimo.strftime('%Y-%m-%d'),
-        'data_devolucao_prevista': data_devolucao_prevista.strftime('%Y-%m-%d')
+        'data_devolucao_prevista': data_devolucao_prevista.strftime('%Y-%m-%d'),
+        'status': 'ativo',
+        'data_devolucao_real': None,
+        'debito_pago': 0.0
     }
     
     # Realizar empréstimo
@@ -233,18 +256,22 @@ def emprestar_direto():
     if 'emprestimos' not in leitor:
         leitor['emprestimos'] = []
     
-    # RESTRIÇÃO 1: Máximo de 3 livros emprestados
-    if len(leitor['emprestimos']) >= MAX_LIVROS_EMPRESTADOS:
-        return jsonify({'success': False, 'message': f'Você já possui {MAX_LIVROS_EMPRESTADOS} livros emprestados. Limite máximo atingido.'}), 400
+    # Atualizar status dos empréstimos (ativo -> em atraso se atrasado)
+    leitor['emprestimos'] = atualizar_status_emprestimos(leitor['emprestimos'])
+    
+    # RESTRIÇÃO 1: Máximo de 3 livros emprestados (ativos ou em atraso)
+    emprestimos_nao_finalizados = [e for e in leitor['emprestimos'] if e.get('status') in ['ativo', 'em atraso']]
+    if len(emprestimos_nao_finalizados) >= MAX_LIVROS_EMPRESTADOS:
+        return jsonify({'success': False, 'message': f'Você já possui {len(emprestimos_nao_finalizados)} livros emprestados. Limite máximo atingido.'}), 400
     
     # RESTRIÇÃO 2: Débito não pode superar R$ 10,00
     debito_atual = calcular_debito_total(leitor['emprestimos'])
     if debito_atual >= MAX_DEBITO:
         return jsonify({'success': False, 'message': f'Você possui débito de R$ {debito_atual:.2f}. O débito não pode superar R$ {MAX_DEBITO:.2f} para novos empréstimos.'}), 400
     
-    # Verificar se o leitor já tem este livro emprestado
+    # Verificar se o leitor já tem este livro emprestado (ativo ou em atraso)
     for emp in leitor['emprestimos']:
-        if emp.get('livro_id') == livro_id:
+        if emp.get('livro_id') == livro_id and emp.get('status') in ['ativo', 'em atraso']:
             return jsonify({'success': False, 'message': 'Você já possui um exemplar deste livro emprestado'}), 400
     
     # Calcular datas
@@ -255,7 +282,10 @@ def emprestar_direto():
     emprestimo = {
         'livro_id': livro_id,
         'data_emprestimo': data_emprestimo.strftime('%Y-%m-%d'),
-        'data_devolucao_prevista': data_devolucao_prevista.strftime('%Y-%m-%d')
+        'data_devolucao_prevista': data_devolucao_prevista.strftime('%Y-%m-%d'),
+        'status': 'ativo',
+        'data_devolucao_real': None,
+        'debito_pago': 0.0
     }
     
     # Realizar empréstimo
@@ -343,8 +373,11 @@ def reservar_livro():
     if 'emprestimos' not in leitor:
         leitor['emprestimos'] = []
     
+    # Atualizar status dos empréstimos
+    leitor['emprestimos'] = atualizar_status_emprestimos(leitor['emprestimos'])
+    
     for emp in leitor['emprestimos']:
-        if emp.get('livro_id') == livro_id:
+        if emp.get('livro_id') == livro_id and emp.get('status') in ['ativo', 'em débito']:
             return jsonify({'success': False, 'message': 'Você já possui um exemplar deste livro emprestado'}), 400
     
     # Criar reserva
@@ -379,6 +412,340 @@ def reservar_livro():
         'message': 'Reserva realizada com sucesso',
         'livro': livro.get('titulo'),
         'posicao_fila': posicao_fila
+    })
+
+@bp.route('/devolver', methods=['POST'])
+def devolver_livro():
+    """Registra a devolução de um livro emprestado"""
+    # Verificar autenticação
+    if 'usuario_logado' not in session:
+        return jsonify({'success': False, 'message': 'Não autenticado'}), 401
+    
+    usuario_logado = session['usuario_logado']
+    
+    # Verificar se é funcionário
+    if usuario_logado.get('role') != 'funcionario':
+        return jsonify({'success': False, 'message': 'Apenas funcionários podem registrar devoluções'}), 403
+    
+    data = request.get_json()
+    cpf_leitor = data.get('cpf_leitor')
+    livro_id = data.get('livro_id')
+    
+    if not cpf_leitor or not livro_id:
+        return jsonify({'success': False, 'message': 'CPF do leitor e ID do livro são obrigatórios'}), 400
+    
+    # Carregar dados
+    usuarios = carregar_usuarios()
+    livros = carregar_livros()
+    
+    # Encontrar o leitor
+    leitor = None
+    leitor_index = None
+    for i, usuario in enumerate(usuarios):
+        if usuario.get('cpf') == cpf_leitor:
+            leitor = usuario
+            leitor_index = i
+            break
+    
+    if not leitor:
+        return jsonify({'success': False, 'message': 'Leitor não encontrado'}), 404
+    
+    # Encontrar o livro
+    livro = None
+    livro_index = None
+    for i, l in enumerate(livros):
+        if l.get('id') == livro_id:
+            livro = l
+            livro_index = i
+            break
+    
+    if not livro:
+        return jsonify({'success': False, 'message': 'Livro não encontrado'}), 404
+    
+    # Encontrar o empréstimo ativo ou em atraso
+    emprestimo = None
+    emprestimo_index = None
+    for i, emp in enumerate(leitor.get('emprestimos', [])):
+        if emp.get('livro_id') == livro_id and emp.get('status') in ['ativo', 'em atraso']:
+            emprestimo = emp
+            emprestimo_index = i
+            break
+    
+    if not emprestimo:
+        return jsonify({'success': False, 'message': 'Empréstimo ativo não encontrado para este livro'}), 404
+    
+    # Calcular débito
+    debito = calcular_debito_emprestimo(
+        emprestimo.get('data_emprestimo'),
+        emprestimo.get('data_devolucao_prevista')
+    )
+    
+    # Atualizar empréstimo
+    data_devolucao = datetime.now()
+    
+    # Se há débito, marcar como "devolvido-em-atraso"; se não há, marcar como "devolvido"
+    if debito > 0:
+        leitor['emprestimos'][emprestimo_index]['status'] = 'devolvido-em-atraso'
+    else:
+        leitor['emprestimos'][emprestimo_index]['status'] = 'devolvido'
+    
+    leitor['emprestimos'][emprestimo_index]['data_devolucao_real'] = data_devolucao.strftime('%Y-%m-%d')
+    leitor['emprestimos'][emprestimo_index]['debito_pago'] = debito
+    
+    # Decrementar exemplares emprestados
+    livros[livro_index]['exemplares_emprestados'] = max(0, livro.get('exemplares_emprestados', 0) - 1)
+    
+    # Verificar se há fila de reservas
+    fila_reservas = livro.get('fila_reservas', [])
+    proximo_leitor = None
+    
+    if len(fila_reservas) > 0:
+        # Pegar primeiro da fila
+        reserva = fila_reservas.pop(0)
+        cpf_proximo = reserva.get('cpf_leitor')
+        
+        # Encontrar o próximo leitor
+        proximo_leitor_index = None
+        for i, usuario in enumerate(usuarios):
+            if usuario.get('cpf') == cpf_proximo:
+                proximo_leitor = usuario
+                proximo_leitor_index = i
+                break
+        
+        if proximo_leitor:
+            # Verificar restrições antes de emprestar automaticamente
+            emprestimos_ativos = [e for e in proximo_leitor.get('emprestimos', []) if e.get('status') in ['ativo', 'em atraso']]
+            debito_proximo = calcular_debito_total(emprestimos_ativos)
+            
+            # Só empresta se não violar as restrições
+            if len(emprestimos_ativos) < MAX_LIVROS_EMPRESTADOS and debito_proximo < MAX_DEBITO:
+                # Criar empréstimo automático
+                data_novo_emprestimo = datetime.now()
+                data_nova_devolucao = data_novo_emprestimo + timedelta(days=DIAS_EMPRESTIMO)
+                
+                novo_emprestimo = {
+                    'livro_id': livro_id,
+                    'data_emprestimo': data_novo_emprestimo.strftime('%Y-%m-%d'),
+                    'data_devolucao_prevista': data_nova_devolucao.strftime('%Y-%m-%d'),
+                    'status': 'ativo',
+                    'data_devolucao_real': None,
+                    'debito_pago': 0.0
+                }
+                
+                # Adicionar empréstimo
+                if 'emprestimos' not in proximo_leitor:
+                    proximo_leitor['emprestimos'] = []
+                proximo_leitor['emprestimos'].append(novo_emprestimo)
+                
+                # Remover livro da lista de reservas do usuário
+                if 'reservas' in proximo_leitor and livro_id in proximo_leitor['reservas']:
+                    proximo_leitor['reservas'].remove(livro_id)
+                
+                # Incrementar exemplares emprestados novamente
+                livros[livro_index]['exemplares_emprestados'] = livro.get('exemplares_emprestados', 0) + 1
+                
+                # Salvar próximo leitor
+                usuarios[proximo_leitor_index] = proximo_leitor
+            else:
+                # Não pode emprestar, retorna para a fila
+                fila_reservas.insert(0, reserva)
+                proximo_leitor = None
+        
+        # Atualizar fila de reservas
+        livros[livro_index]['fila_reservas'] = fila_reservas
+    
+    # Salvar alterações
+    usuarios[leitor_index] = leitor
+    salvar_usuarios(usuarios)
+    salvar_livros(livros)
+    
+    mensagem_retorno = {
+        'success': True,
+        'message': 'Devolução registrada com sucesso',
+        'leitor': leitor.get('nome'),
+        'livro': livro.get('titulo'),
+        'debito': debito
+    }
+    
+    if proximo_leitor:
+        mensagem_retorno['emprestimo_automatico'] = {
+            'leitor': proximo_leitor.get('nome'),
+            'cpf': proximo_leitor.get('cpf')
+        }
+    
+    return jsonify(mensagem_retorno)
+
+@bp.route('/retirar-debito', methods=['POST'])
+def retirar_debito():
+    """Registra o pagamento do débito de um empréstimo devolvido em atraso"""
+    # Verificar autenticação
+    if 'usuario_logado' not in session:
+        return jsonify({'success': False, 'message': 'Não autenticado'}), 401
+    
+    usuario_logado = session['usuario_logado']
+    
+    # Verificar se é funcionário
+    if usuario_logado.get('role') != 'funcionario':
+        return jsonify({'success': False, 'message': 'Apenas funcionários podem registrar pagamento de débitos'}), 403
+    
+    data = request.get_json()
+    cpf_leitor = data.get('cpf_leitor')
+    livro_id = data.get('livro_id')
+    
+    if not cpf_leitor or not livro_id:
+        return jsonify({'success': False, 'message': 'CPF do leitor e ID do livro são obrigatórios'}), 400
+    
+    # Carregar dados
+    usuarios = carregar_usuarios()
+    livros = carregar_livros()
+    
+    # Encontrar o leitor
+    leitor = None
+    leitor_index = None
+    for i, usuario in enumerate(usuarios):
+        if usuario.get('cpf') == cpf_leitor:
+            leitor = usuario
+            leitor_index = i
+            break
+    
+    if not leitor:
+        return jsonify({'success': False, 'message': 'Leitor não encontrado'}), 404
+    
+    # Encontrar o livro (para pegar título)
+    livro = None
+    for l in livros:
+        if l.get('id') == livro_id:
+            livro = l
+            break
+    
+    if not livro:
+        return jsonify({'success': False, 'message': 'Livro não encontrado'}), 404
+    
+    # Encontrar o empréstimo com status 'devolvido-em-atraso'
+    emprestimo = None
+    emprestimo_index = None
+    for i, emp in enumerate(leitor.get('emprestimos', [])):
+        if emp.get('livro_id') == livro_id and emp.get('status') == 'devolvido-em-atraso':
+            emprestimo = emp
+            emprestimo_index = i
+            break
+    
+    if not emprestimo:
+        return jsonify({'success': False, 'message': 'Empréstimo com débito pendente não encontrado para este livro'}), 404
+    
+    # Obter valor do débito
+    debito_pago = emprestimo.get('debito_pago', 0.0)
+    
+    # Atualizar empréstimo para status 'devolvido' (finalizado)
+    leitor['emprestimos'][emprestimo_index]['status'] = 'devolvido'
+    leitor['emprestimos'][emprestimo_index]['debito_pago'] = 0.0  # Zerar débito após pagamento
+    
+    # Salvar alterações
+    usuarios[leitor_index] = leitor
+    salvar_usuarios(usuarios)
+    
+    return jsonify({
+        'success': True,
+        'message': 'Débito quitado com sucesso',
+        'leitor': leitor.get('nome'),
+        'livro': livro.get('titulo'),
+        'valor_pago': debito_pago
+    })
+
+@bp.route('/renovar', methods=['POST'])
+def renovar_emprestimo():
+    """Renova um empréstimo ativo, estendendo o prazo de devolução"""
+    # Verificar autenticação
+    if 'usuario_logado' not in session:
+        return jsonify({'success': False, 'message': 'Não autenticado'}), 401
+    
+    usuario_logado = session['usuario_logado']
+    
+    # Verificar se é funcionário
+    if usuario_logado.get('role') != 'funcionario':
+        return jsonify({'success': False, 'message': 'Apenas funcionários podem renovar empréstimos'}), 403
+    
+    data = request.get_json()
+    cpf_leitor = data.get('cpf_leitor')
+    livro_id = data.get('livro_id')
+    
+    if not cpf_leitor or not livro_id:
+        return jsonify({'success': False, 'message': 'CPF do leitor e ID do livro são obrigatórios'}), 400
+    
+    # Carregar dados
+    usuarios = carregar_usuarios()
+    livros = carregar_livros()
+    
+    # Encontrar o leitor
+    leitor = None
+    leitor_index = None
+    for i, usuario in enumerate(usuarios):
+        if usuario.get('cpf') == cpf_leitor:
+            leitor = usuario
+            leitor_index = i
+            break
+    
+    if not leitor:
+        return jsonify({'success': False, 'message': 'Leitor não encontrado'}), 404
+    
+    # Encontrar o livro
+    livro = None
+    for l in livros:
+        if l.get('id') == livro_id:
+            livro = l
+            break
+    
+    if not livro:
+        return jsonify({'success': False, 'message': 'Livro não encontrado'}), 404
+    
+    # Encontrar o empréstimo ativo ou em atraso
+    emprestimo = None
+    emprestimo_index = None
+    for i, emp in enumerate(leitor.get('emprestimos', [])):
+        if emp.get('livro_id') == livro_id and emp.get('status') in ['ativo', 'em atraso']:
+            emprestimo = emp
+            emprestimo_index = i
+            break
+    
+    if not emprestimo:
+        return jsonify({'success': False, 'message': 'Empréstimo ativo não encontrado para este livro'}), 404
+    
+    # Atualizar status dos empréstimos
+    leitor['emprestimos'] = atualizar_status_emprestimos(leitor['emprestimos'])
+    
+    # Verificar se há débito acumulado (não permite renovar se há débito)
+    debito_atual = calcular_debito_total(leitor['emprestimos'])
+    if debito_atual >= MAX_DEBITO:
+        return jsonify({'success': False, 'message': f'O leitor possui débito de R$ {debito_atual:.2f}. Não é possível renovar com débito pendente.'}), 400
+    
+    # RESTRIÇÃO: Renovação só pode ser feita até 5 dias antes da data de devolução
+    data_atual = datetime.now()
+    data_devolucao_prevista = datetime.strptime(emprestimo.get('data_devolucao_prevista'), '%Y-%m-%d')
+    dias_restantes = (data_devolucao_prevista - data_atual).days
+    
+    if dias_restantes > 5:
+        return jsonify({
+            'success': False,
+            'message': f'Renovação não permitida. Ainda faltam {dias_restantes} dias para a devolução. A renovação só pode ser feita até 5 dias antes da data de devolução.'
+        }), 400
+    
+    # Calcular nova data de devolução (mais 14 dias a partir de hoje)
+    nova_data_devolucao = data_atual + timedelta(days=DIAS_EMPRESTIMO)
+    
+    # Atualizar empréstimo
+    leitor['emprestimos'][emprestimo_index]['data_devolucao_prevista'] = nova_data_devolucao.strftime('%Y-%m-%d')
+    leitor['emprestimos'][emprestimo_index]['status'] = 'ativo'  # Volta para ativo após renovação
+    
+    # Salvar alterações
+    usuarios[leitor_index] = leitor
+    salvar_usuarios(usuarios)
+    
+    return jsonify({
+        'success': True,
+        'message': 'Empréstimo renovado com sucesso',
+        'leitor': leitor.get('nome'),
+        'livro': livro.get('titulo'),
+        'nova_data_devolucao': nova_data_devolucao.strftime('%d/%m/%Y')
     })
 
 @bp.route('/debito/<string:cpf>', methods=['GET'])

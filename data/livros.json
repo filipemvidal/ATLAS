@@ -13,7 +13,7 @@
     "ano": 1899,
     "localizacao": "Estante A, Prateleira 1",
     "exemplares_totais": 5,
-    "exemplares_emprestados": 2,
+    "exemplares_emprestados": 0,
     "fila_reservas": []
   },
   {
@@ -48,13 +48,7 @@
     "localizacao": "Estante B, Prateleira 1",
     "exemplares_totais": 1,
     "exemplares_emprestados": 1,
-    "fila_reservas": [
-      {
-        "cpf_leitor": "76841799003",
-        "nome_leitor": "Maria Santos",
-        "data_reserva": "2026-01-10"
-      }
-    ]
+    "fila_reservas": []
   },
   {
     "id": 4,
@@ -139,7 +133,7 @@
     "ano": 1865,
     "localizacao": "Estante A, Prateleira 4",
     "exemplares_totais": 5,
-    "exemplares_emprestados": 1,
+    "exemplares_emprestados": 0,
     "fila_reservas": []
   },
   {

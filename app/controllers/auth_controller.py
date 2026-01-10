@@ -1,11 +1,26 @@
 from flask import Blueprint, request, jsonify, session
 import json
 import os
+from datetime import datetime
 
 bp = Blueprint('auth', __name__, url_prefix='/api')
 
 # Caminho para o arquivo de usuários
 USUARIOS_FILE = os.path.join('data', 'usuarios.json')
+
+def atualizar_status_emprestimos(emprestimos):
+    """Atualiza o status dos empréstimos ativos para 'em atraso' se estiverem atrasados"""
+    data_atual = datetime.now()
+    
+    for emprestimo in emprestimos:
+        if emprestimo.get('status') == 'ativo':
+            data_devolucao_prevista = datetime.strptime(emprestimo.get('data_devolucao_prevista'), '%Y-%m-%d')
+            
+            # Se passou da data de devolução, marcar como em atraso
+            if data_atual > data_devolucao_prevista:
+                emprestimo['status'] = 'em atraso'
+    
+    return emprestimos
 
 def carregar_usuarios():
     """Carrega usuários do arquivo JSON"""
@@ -115,6 +130,14 @@ def get_usuario():
 def listar_usuarios():
     """Lista todos os usuários (sem senhas)"""    
     usuarios = carregar_usuarios()
+    
+    # Atualizar status dos empréstimos antes de retornar
+    for usuario in usuarios:
+        if 'emprestimos' in usuario and usuario['emprestimos']:
+            usuario['emprestimos'] = atualizar_status_emprestimos(usuario['emprestimos'])
+    
+    # Salvar atualizações de status
+    salvar_usuarios(usuarios)
     
     # Remover senhas antes de enviar
     usuarios_sem_senha = []
