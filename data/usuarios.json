@@ -1,0 +1,26 @@
+[
+  {
+    "nome": "João Silva",
+    "cpf": "12345678909",
+    "email": "joao.silva@biblioteca.com",
+    "matricula": "100000001",
+    "senha": "1234",
+    "role": "funcionario"
+  },
+  {
+    "nome": "Maria Santos",
+    "cpf": "76841799003",
+    "email": "maria.santos@escola.edu",
+    "matricula": "200000001",
+    "senha": "1234",
+    "role": "professor"
+  },
+  {
+    "nome": "Pedro Oliveira",
+    "cpf": "77183381005",
+    "email": "pedro.oliveira@escola.edu",
+    "matricula": "300000001",
+    "senha": "1234",
+    "role": "estudante"
+  }
+]

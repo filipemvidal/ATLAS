@@ -1,21 +1,3 @@
-const usuarios = [{
-        nome: "Funcionário",
-        cpf:"12345678909",
-        password: "1234",
-        role: "Funcionario"
-    },{
-        nome: "Professor",
-        cpf:"76841799003",
-        password: "1234",
-        role: "Professor"  
-    },{
-        nome: "Aluno",
-        cpf:"77183381005",
-        password: "1234",
-        role: "Aluno"
-    }
-];
-
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
     const icon = event.target.closest('.toggle-password').querySelector('i');
@@ -81,21 +63,26 @@ async function handleLogin(event) {
         return;
     }
 
-    let usuarioEncontrado = null;
-    
-    // MODIFICAR: buscar na base de dados
-    for(let i=0; i<usuarios.length; i++){
-        if(usuarios[i].cpf === cpf && usuarios[i].password === senha) {
-            usuarioEncontrado = usuarios[i]
-            break;
+    try {
+        // Fazer requisição para o backend
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cpf, senha })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Redirecionar para a home
+            window.location.href = '/home';
+        } else {
+            alert(data.message || 'CPF ou senha incorretos!');
         }
-    }
-    // FIM-MODIFICAR
-    
-    if (usuarioEncontrado) {
-        sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioEncontrado));
-        window.location.href = './src/static/html/home.html';
-    } else {
-        alert('CPF ou senha incorretos!');
+    } catch (error) {
+        console.error('Erro ao fazer login:', error);
+        alert('Erro ao conectar com o servidor. Tente novamente.');
     }
 }
