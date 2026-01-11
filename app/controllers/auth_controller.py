@@ -87,7 +87,7 @@ def register():
         return jsonify({'success': False, 'message': 'Todos os campos são obrigatórios'}), 400
     
     # Validar role
-    if role not in ['funcionario', 'estudante', 'professor']:
+    if role not in ['funcionario', 'leitor']:
         return jsonify({'success': False, 'message': 'Tipo de usuário inválido'}), 400
     
     # Carregar usuários existentes
@@ -181,7 +181,17 @@ def deletar_usuario(cpf):
     if usuario_index is None:
         return jsonify({'success': False, 'message': 'Usuário não encontrado'}), 404
     
-    # Validação 2: Sempre deve haver pelo menos um funcionário
+    # Validação 2: Verificar se há empréstimos ativos ou devolvidos com débito
+    emprestimos = usuario_a_deletar.get('emprestimos', [])
+    emprestimos_pendentes = [emp for emp in emprestimos if emp.get('status') in ['ativo', 'em atraso', 'devolvido-em-atraso']]
+    
+    if emprestimos_pendentes:
+        return jsonify({
+            'success': False, 
+            'message': f'Não é possível excluir este usuário. Há {len(emprestimos_pendentes)} empréstimo(s) pendente(s). Finalize todos os empréstimos antes de excluir.'
+        }), 400
+    
+    # Validação 3: Sempre deve haver pelo menos um funcionário
     if usuario_a_deletar.get('role') == 'funcionario':
         # Contar quantos funcionários existem
         total_funcionarios = sum(1 for u in usuarios if u.get('role') == 'funcionario')
@@ -198,8 +208,15 @@ def deletar_usuario(cpf):
     
     return jsonify({'success': True, 'message': 'Usuário deletado com sucesso'})
 
-@bp.route('/logout', methods=['POST'])
+@bp.route('/logout', methods=['GET', 'POST'])
 def logout():
     """Faz logout do usuário"""
     session.pop('usuario_logado', None)
-    return jsonify({'success': True})
+    
+    # Se for requisição via JavaScript (POST), retornar JSON
+    if request.method == 'POST':
+        return jsonify({'success': True})
+    
+    # Se for redirecionamento direto (GET), redirecionar para a página de login
+    from flask import redirect, url_for
+    return redirect(url_for('main.index'))

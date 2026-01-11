@@ -16,6 +16,21 @@ let currentBorrowBookId = null;
 // Carregar livros quando a página é carregada
 carregarLivros();
 
+// Formatar CPF automaticamente no modal de empréstimo
+const borrowerCpfInput = document.getElementById('borrower-cpf');
+if (borrowerCpfInput) {
+    borrowerCpfInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        if (value.length <= 11) {
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value;
+        }
+    });
+}
+
 // Ajusta a interface com base no papel do usuário
 const addBookBtn = document.getElementById('addBookBtn');
 const openReadersBtn = document.getElementById('openReadersBtn');
@@ -339,11 +354,6 @@ async function deleteBook(bookId) {
     }
 }
 
-function logout() {
-    sessionStorage.removeItem('usuarioLogado');
-    window.location.href = '../../../index.html';
-}
-
 function showBookDetails(bookId) {
     // Buscar livro pelo ID no array booksData
     const bookData = booksData.find(livro => livro.id === bookId);
@@ -395,7 +405,7 @@ function showBookDetails(bookId) {
             borrowBtn.title = 'Não há exemplares disponíveis';
         }
     } else {
-        // Estudante/Professor: mostra botões de emprestar direto ou reservar
+        // Leitor: mostra botões de emprestar direto ou reservar
         borrowBtn.style.display = 'none';
         
         if (exemplares_disponiveis > 0) {
@@ -445,7 +455,7 @@ function borrowBook() {
 async function handleBorrowWithCpf(event) {
     event.preventDefault();
     
-    const cpf = document.getElementById('borrower-cpf').value.trim();
+    const cpf = document.getElementById('borrower-cpf').value.trim().replace(/\D/g, '');
     
     if (!cpf) {
         alert('Por favor, informe o CPF do leitor.');
@@ -600,6 +610,6 @@ function openBorrowsPage() {
 
 function logout() {
     if (confirm('Deseja realmente sair?')) {
-        window.location.href = '/logout';
+        window.location.href = '/api/logout';
     }
 }

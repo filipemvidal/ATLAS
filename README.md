@@ -4,7 +4,7 @@ Sistema web completo para gerenciamento de biblioteca desenvolvido com Flask, in
 
 ## 📋 Funcionalidades
 
-- **Autenticação**: Login e cadastro de usuários (funcionários, professores e estudantes)
+- **Autenticação**: Login e cadastro de usuários (funcionários e leitores)
 - **Gestão de Livros**: CRUD completo de livros do acervo
 - **Gestão de Usuários**: Visualização e gerenciamento de leitores
 - **Empréstimos**: Sistema de empréstimo via CPF com validações (máximo 3 livros, débito máximo R$ 10,00)
@@ -146,8 +146,8 @@ O sistema vem com alguns usuários pré-cadastrados para teste:
 | Tipo | Nome | CPF | Matrícula | Senha |
 |------|------|-----|-----------|-------|
 | Funcionário | João Silva | 12345678909 | 100000001 | 1234 |
-| Professor | Maria Santos | 76841799003 | 200000001 | 1234 |
-| Estudante | Pedro Oliveira | 77183381005 | 300000001 | 1234 |
+| Leitor | Maria Santos | 76841799003 | 200000001 | 1234 |
+| Leitor | Pedro Oliveira | 77183381005 | 300000001 | 1234 |
 
 ## 📚 Regras de Negócio
 

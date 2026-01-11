@@ -1,3 +1,18 @@
+// Formatar CPF automaticamente enquanto digita
+const cpfInput = document.getElementById('cpf');
+if (cpfInput) {
+    cpfInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        
+        if (value.length <= 11) {
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            e.target.value = value;
+        }
+    });
+}
+
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
     const icon = event.target.closest('.toggle-password').querySelector('i');
@@ -52,7 +67,7 @@ async function handleRegister(event)
 {
     event.preventDefault();
 
-    const cpf = document.getElementById('cpf').value;
+    const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
     const nome = document.getElementById('nome').value;
     const email = document.getElementById('email').value;
     const matricula = document.getElementById('matricula').value;

@@ -30,7 +30,7 @@
     "ano": 1890,
     "localizacao": "Estante A, Prateleira 2",
     "exemplares_totais": 2,
-    "exemplares_emprestados": 1,
+    "exemplares_emprestados": 2,
     "fila_reservas": []
   },
   {
@@ -48,7 +48,13 @@
     "localizacao": "Estante B, Prateleira 1",
     "exemplares_totais": 1,
     "exemplares_emprestados": 1,
-    "fila_reservas": []
+    "fila_reservas": [
+      {
+        "cpf_leitor": "76841799003",
+        "nome_leitor": "Maria Santos",
+        "data_reserva": "2026-01-11"
+      }
+    ]
   },
   {
     "id": 4,
@@ -115,7 +121,7 @@
     "ano": 1844,
     "localizacao": "Estante A, Prateleira 3",
     "exemplares_totais": 2,
-    "exemplares_emprestados": 1,
+    "exemplares_emprestados": 0,
     "fila_reservas": []
   },
   {
@@ -173,7 +179,7 @@
   {
     "id": 11,
     "titulo": "Dom Casmurro",
-    "autor": "Machado de Asiis",
+    "autor": "Machado de Assis",
     "editora": "Companhia das Letras",
     "edicao": "2ª",
     "isbn": "9788544001081",
@@ -184,7 +190,6 @@
     "ano": 1901,
     "localizacao": "Estante A, Prateleira 2",
     "exemplares_totais": 7,
-    "exemplares_emprestados": 0,
-    "fila_reservas": []
+    "exemplares_emprestados": 0
   }
 ]

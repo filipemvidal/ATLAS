@@ -84,8 +84,9 @@ window.onclick = function(event) {
 };
 
 function logout() {
-    sessionStorage.removeItem('usuarioLogado');
-    window.location.href = 'index.html';
+    if (confirm('Deseja realmente sair?')) {
+        window.location.href = '/api/logout';
+    }
 }
 
 function filterReaders(query) {
@@ -105,11 +106,10 @@ function addReaderRow(reader)
     
     row.style.cursor = 'pointer';
     
-    // Traduzir role para português
+    // Formatar tipo de usuário
     const tipoMap = {
         'funcionario': 'Funcionário',
-        'estudante': 'Estudante',
-        'professor': 'Professor'
+        'leitor': 'Leitor'
     };
     const tipoFormatado = tipoMap[reader.role] || reader.role;
     
@@ -129,11 +129,10 @@ function addReaderRow(reader)
 }
 
 function showReaderDetails(reader) {
-    // Traduzir role para português
+    // Formatar tipo de usuário
     const tipoMap = {
         'funcionario': 'Funcionário',
-        'estudante': 'Estudante',
-        'professor': 'Professor'
+        'leitor': 'Leitor'
     };
     const tipoFormatado = tipoMap[reader.role] || reader.role;
     
@@ -143,12 +142,29 @@ function showReaderDetails(reader) {
     document.getElementById('detail-matricula').textContent = reader.matricula;
     document.getElementById('detail-tipo').textContent = tipoFormatado;
     
-    // Popula a tabela de empréstimos
+    // Atualizar tabela de empréstimos usando função reutilizável
+    atualizarTabelaEmprestimos(reader.cpf);
+    
+    openModal(readerModal);
+}
+
+function formatarData(dataStr) {
+    if (!dataStr) return '-';
+    const [ano, mes, dia] = dataStr.split('-');
+    return `${dia}/${mes}/${ano}`;
+}
+
+function atualizarTabelaEmprestimos(cpf_leitor) {
+    // Buscar leitor atualizado
+    const leitor = readersData.find(l => l.cpf === cpf_leitor);
+    if (!leitor) return;
+    
+    // Atualizar apenas a tabela de empréstimos
     const borrowedTableBody = document.querySelector('#readerDetailsModal .borrowed-table tbody');
     borrowedTableBody.innerHTML = '';
     
     // Filtrar empréstimos ativos, em atraso e devolvidos com débito (não finalizados)
-    const emprestimosAtivos = reader.emprestimos ? reader.emprestimos.filter(emp => emp.status === 'ativo' || emp.status === 'em atraso' || emp.status === 'devolvido-em-atraso') : [];
+    const emprestimosAtivos = leitor.emprestimos ? leitor.emprestimos.filter(emp => emp.status === 'ativo' || emp.status === 'em atraso' || emp.status === 'devolvido-em-atraso') : [];
     
     if (emprestimosAtivos.length > 0) {
         emprestimosAtivos.forEach(emprestimo => {
@@ -191,7 +207,7 @@ function showReaderDetails(reader) {
             `;
             
             row.addEventListener('click', function() {
-                showBookDetailsFromReader(livro, emprestimo, reader.cpf);
+                showBookDetailsFromReader(livro, emprestimo, leitor.cpf);
             });
             
             borrowedTableBody.appendChild(row);
@@ -199,14 +215,6 @@ function showReaderDetails(reader) {
     } else {
         borrowedTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Nenhum empréstimo ativo</td></tr>';
     }
-    
-    openModal(readerModal);
-}
-
-function formatarData(dataStr) {
-    if (!dataStr) return '-';
-    const [ano, mes, dia] = dataStr.split('-');
-    return `${dia}/${mes}/${ano}`;
 }
 
 function showBookDetailsFromReader(livro, emprestimo, leitorCpf) {
@@ -354,22 +362,43 @@ async function registerReturn() {
         const result = await response.json();
         
         if (response.ok) {
-            // Fechar modal
-            closeModal(bookModal);
-            
             // Recarregar leitores
             await carregarLeitores();
             
-            // Mensagem de sucesso
+            // Atualizar tabela de empréstimos do leitor em tempo real
+            atualizarTabelaEmprestimos(cpf_leitor);
+            
+            // Preparar mensagem com empréstimo automático (se houver)
             let mensagemSucesso = result.message;
             if (result.emprestimo_automatico) {
                 mensagemSucesso += `\n\nO livro foi automaticamente emprestado para ${result.emprestimo_automatico.leitor} (CPF: ${result.emprestimo_automatico.cpf}) que estava na fila de reservas.`;
             }
             
-            alert(mensagemSucesso);
+            // Verificar se há débito pendente
+            const temDebito = result.debito && result.debito > 0;
             
-            // Limpar dados
-            currentBorrowData = null;
+            if (temDebito) {
+                // Se houver débito, atualizar o modal do livro
+                const leitor = readersData.find(l => l.cpf === cpf_leitor);
+                if (leitor) {
+                    const emprestimo = leitor.emprestimos.find(e => e.livro_id === livro_id);
+                    const livro = booksData.find(l => l.id === livro_id);
+                    
+                    if (emprestimo && livro) {
+                        // Atualizar detalhes do modal do livro
+                        showBookDetailsFromReader(livro, emprestimo, cpf_leitor);
+                    }
+                }
+                
+                // Adicionar informação do débito à mensagem
+                mensagemSucesso += `\n\nDébito pendente: R$ ${result.debito.toFixed(2)}\n\nO empréstimo ficará com status "Devolvido (Débito pendente)" até o débito ser quitado.`;
+                alert(mensagemSucesso);
+            } else {
+                // Se não houver débito, fechar modal do livro e limpar dados
+                closeModal(bookModal);
+                alert(mensagemSucesso);
+                currentBorrowData = null;
+            }
         } else {
             alert(result.message || 'Erro ao registrar devolução.');
         }
@@ -379,7 +408,7 @@ async function registerReturn() {
     }
 }
 
-function removeDebit() {
+async function removeDebit() {
     if (!currentBorrowData) {
         alert('Erro: Dados do empréstimo não encontrados.');
         return;
@@ -397,10 +426,6 @@ function removeDebit() {
         return;
     }
     
-    removerDebito(cpf_leitor, livro_id, livro_titulo, debito);
-}
-
-async function removerDebito(cpf_leitor, livro_id, livro_titulo, debito) {
     try {
         const response = await fetch('/api/emprestimos/retirar-debito', {
             method: 'POST',
@@ -416,11 +441,14 @@ async function removerDebito(cpf_leitor, livro_id, livro_titulo, debito) {
         const result = await response.json();
         
         if (response.ok) {
-            // Fechar modal
-            closeModal(bookModal);
-            
             // Recarregar leitores
             await carregarLeitores();
+            
+            // Atualizar tabela de empréstimos do leitor em tempo real
+            atualizarTabelaEmprestimos(cpf_leitor);
+            
+            // Fechar modal do livro
+            closeModal(bookModal);
             
             alert(`${result.message}\n\nValor pago: R$ ${result.valor_pago.toFixed(2)}`);
             
@@ -435,7 +463,7 @@ async function removerDebito(cpf_leitor, livro_id, livro_titulo, debito) {
     }
 }
 
-function renewBorrow() {
+async function renewBorrow() {
     if (!currentBorrowData) {
         alert('Erro: Dados do empréstimo não encontrados.');
         return;
@@ -454,10 +482,6 @@ function renewBorrow() {
         return;
     }
     
-    renovarEmprestimo(cpf_leitor, livro_id);
-}
-
-async function renovarEmprestimo(cpf_leitor, livro_id) {
     try {
         const response = await fetch('/api/emprestimos/renovar', {
             method: 'POST',
@@ -473,11 +497,14 @@ async function renovarEmprestimo(cpf_leitor, livro_id) {
         const result = await response.json();
         
         if (response.ok) {
-            // Fechar modal
-            closeModal(bookModal);
-            
             // Recarregar leitores
             await carregarLeitores();
+            
+            // Atualizar tabela de empréstimos do leitor em tempo real
+            atualizarTabelaEmprestimos(cpf_leitor);
+            
+            // Fechar modal do livro
+            closeModal(bookModal);
             
             alert(`${result.message}\n\nNova data de devolução: ${result.nova_data_devolucao}`);
             

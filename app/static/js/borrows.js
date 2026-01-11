@@ -41,7 +41,7 @@ async function carregarEmprestimos() {
                     e.status === 'ativo' || e.status === 'em atraso' || e.status === 'devolvido-em-atraso'
                 );
                 emprestimosHistorico = usuario.emprestimos.filter(e => 
-                    e.status === 'devolvido'
+                    e.status === 'devolvido' || e.status === 'debito-quitado'
                 );
                 
                 renderizarEmprestimosAtivos();
@@ -181,7 +181,7 @@ function atualizarResumo() {
     
     let debitoTotal = 0;
     emprestimosAtivos.forEach(emp => {
-        if (emp.status === 'ativo' || emp.status === 'em atraso') {
+        if (emp.status === 'ativo' || emp.status === 'em atraso' || emp.status === 'devolvido-em-atraso') {
             debitoTotal += calcularDebito(emp);
         }
     });
@@ -332,6 +332,6 @@ function formatarData(dataStr) {
 
 function logout() {
     if (confirm('Deseja realmente sair?')) {
-        window.location.href = '/logout';
+        window.location.href = '/api/logout';
     }
 }

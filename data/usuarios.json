@@ -3,7 +3,7 @@
     "nome": "João Silva",
     "cpf": "12345678909",
     "email": "joao.silva@ufjf.br",
-    "matricula": "100000001",
+    "matricula": "200581120A",
     "senha": "1234",
     "role": "funcionario",
     "reservas": [],
@@ -13,10 +13,12 @@
     "nome": "Maria Santos",
     "cpf": "76841799003",
     "email": "maria.santos@ufjf.br",
-    "matricula": "200000001",
+    "matricula": "202365331B",
     "senha": "1234",
-    "role": "professor",
-    "reservas": [],
+    "role": "leitor",
+    "reservas": [
+      3
+    ],
     "emprestimos": [
       {
         "livro_id": 8,
@@ -36,10 +38,34 @@
       },
       {
         "livro_id": 3,
-        "data_emprestimo": "2026-01-10",
-        "data_devolucao_prevista": "2026-01-24",
+        "data_emprestimo": "2025-12-31",
+        "data_devolucao_prevista": "2026-01-28",
+        "status": "devolvido",
+        "data_devolucao_real": "2026-01-11",
+        "debito_pago": 0.0
+      },
+      {
+        "livro_id": 5,
+        "data_emprestimo": "2025-12-20",
+        "data_devolucao_prevista": "2026-01-03",
+        "status": "debito-quitado",
+        "data_devolucao_real": "2026-01-11",
+        "debito_pago": 8.0
+      },
+      {
+        "livro_id": 2,
+        "data_emprestimo": "2026-01-11",
+        "data_devolucao_prevista": "2026-01-25",
         "status": "ativo",
         "data_devolucao_real": null,
+        "debito_pago": 0.0
+      },
+      {
+        "livro_id": 8,
+        "data_emprestimo": "2026-01-11",
+        "data_devolucao_prevista": "2026-01-25",
+        "status": "devolvido",
+        "data_devolucao_real": "2026-01-11",
         "debito_pago": 0.0
       }
     ]
@@ -48,9 +74,9 @@
     "nome": "Pedro Oliveira",
     "cpf": "77183381005",
     "email": "pedro.oliveira@estudante.ufjf.br",
-    "matricula": "300000001",
+    "matricula": "202165226C",
     "senha": "1234",
-    "role": "estudante",
+    "role": "leitor",
     "reservas": [],
     "emprestimos": [
       {
@@ -81,6 +107,22 @@
         "livro_id": 7,
         "data_emprestimo": "2025-12-10",
         "data_devolucao_prevista": "2025-12-24",
+        "status": "debito-quitado",
+        "data_devolucao_real": "2026-01-11",
+        "debito_pago": 18.0
+      },
+      {
+        "livro_id": 10,
+        "data_emprestimo": "2026-01-11",
+        "data_devolucao_prevista": "2026-01-25",
+        "status": "devolvido",
+        "data_devolucao_real": "2026-01-11",
+        "debito_pago": 0.0
+      },
+      {
+        "livro_id": 3,
+        "data_emprestimo": "2025-12-25",
+        "data_devolucao_prevista": "2026-01-08",
         "status": "em atraso",
         "data_devolucao_real": null,
         "debito_pago": 0.0

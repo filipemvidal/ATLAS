@@ -39,7 +39,7 @@ def salvar_livros(livros):
     with open(LIVROS_FILE, 'w', encoding='utf-8') as f:
         json.dump(livros, f, ensure_ascii=False, indent=2)
 
-def calcular_debito_emprestimo(data_emprestimo_str, data_devolucao_prevista_str):
+def calcular_debito_emprestimo(data_devolucao_prevista_str):
     """Calcula o débito de um empréstimo baseado na data atual"""
     try:
         data_devolucao_prevista = datetime.strptime(data_devolucao_prevista_str, '%Y-%m-%d')
@@ -65,7 +65,6 @@ def calcular_debito_total(emprestimos):
         # Só calcular débito de empréstimos ativos ou em atraso (não devolvidos)
         if emprestimo.get('status') in ['ativo', 'em atraso']:
             debito = calcular_debito_emprestimo(
-                emprestimo.get('data_emprestimo'),
                 emprestimo.get('data_devolucao_prevista')
             )
             debito_total += debito
@@ -547,7 +546,6 @@ def devolver_livro():
     
     # Calcular débito
     debito = calcular_debito_emprestimo(
-        emprestimo.get('data_emprestimo'),
         emprestimo.get('data_devolucao_prevista')
     )
     
@@ -708,8 +706,7 @@ def retirar_debito():
     debito_pago = emprestimo.get('debito_pago', 0.0)
     
     # Atualizar empréstimo para status 'devolvido' (finalizado)
-    leitor['emprestimos'][emprestimo_index]['status'] = 'devolvido'
-    leitor['emprestimos'][emprestimo_index]['debito_pago'] = 0.0  # Zerar débito após pagamento
+    leitor['emprestimos'][emprestimo_index]['status'] = 'debito-quitado'
     
     # Salvar alterações
     usuarios[leitor_index] = leitor
@@ -789,6 +786,16 @@ def renovar_emprestimo():
     if debito_atual >= MAX_DEBITO:
         return jsonify({'success': False, 'message': f'O leitor possui débito de R$ {debito_atual:.2f}. Não é possível renovar com débito pendente.'}), 400
     
+    # RESTRIÇÃO: Não permite renovar se há fila de espera e todos exemplares estão emprestados
+    exemplares_disponiveis = livro.get('exemplares_totais', 0) - livro.get('exemplares_emprestados', 0)
+    tem_reservas = len(livro.get('fila_reservas', [])) > 0
+    
+    if tem_reservas and exemplares_disponiveis == 0:
+        return jsonify({
+            'success': False,
+            'message': 'Não é possível renovar este empréstimo. Há pessoas aguardando na fila de reservas e todos os exemplares estão emprestados.'
+        }), 400
+    
     # RESTRIÇÃO: Renovação só pode ser feita até 5 dias antes da data de devolução
     data_atual = datetime.now()
     data_devolucao_prevista = datetime.strptime(emprestimo.get('data_devolucao_prevista'), '%Y-%m-%d')
@@ -841,7 +848,6 @@ def consultar_debito(cpf):
     emprestimos_com_debito = []
     for emp in emprestimos:
         debito = calcular_debito_emprestimo(
-            emp.get('data_emprestimo'),
             emp.get('data_devolucao_prevista')
         )
         emprestimos_com_debito.append({
