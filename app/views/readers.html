@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/readers.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/readers.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>ATLAS | Gerenciar Leitores</title>
 </head>
@@ -32,6 +32,7 @@
                         <th>CPF</th>
                         <th>Email</th>
                         <th>Matrícula</th>
+                        <th>Tipo</th>
                     </tr>
                 </thead>
                 <tbody class="table-body" id="readersTableBody"></tbody>
@@ -60,6 +61,10 @@
                     <div class="detail-item">
                         <span class="detail-label">Matrícula:</span>
                         <span class="detail-value" id="detail-matricula"></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Tipo:</span>
+                        <span class="detail-value" id="detail-tipo"></span>
                     </div>
                 </div>
                 
@@ -93,7 +98,7 @@
                 <div class="modal-footer" id="details-modal-footer">
                     <button class="btn-primary" onclick="deleteReader()">
                         <i class="fas fa-trash"></i>
-                        Excluir Leitor
+                        Excluir Usuário
                     </button>
                 </div>
         </div>
@@ -103,12 +108,12 @@
     <div id="bookDetailsModal" class="modal details-modal">
         <div class="modal-content modal-details">
             <div class="modal-header">
-                <h2>Detalhes do Livro</h2>
+                <h2>Detalhes do Empréstimo</h2>
                 <span class="close">&times;</span>
             </div>
             <div class="details-content">
                 <div class="details-section">
-                    <h3>Informações Gerais</h3>
+                    <h3>Livro</h3>
                     <div class="detail-item">
                         <span class="detail-label">Título:</span>
                         <span class="detail-value" id="detail-title"></span>
@@ -147,10 +152,6 @@
                     <h3>Empréstimo</h3>
                     <div class="details-cards">
                         <div class="detail-card">
-                            <h4>Exemplar</h4>
-                            <span class="detail-value" id="detail-copie"></span>
-                        </div>
-                        <div class="detail-card">
                             <h4>Data de empréstimo</h4>
                             <span class="detail-value" id="detail-borrow-date"></span>
                         </div>
@@ -183,6 +184,6 @@
         </div>
     </div>
 
-    <script src="../js/readers.js"></script>
+    <script src="{{ url_for('static', filename='js/readers.js') }}"></script>
 </body>
 </html>

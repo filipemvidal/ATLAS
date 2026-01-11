@@ -47,29 +47,42 @@ function validarCPF(cpf) {
     return true;
 }
 
-
-async function handleRegister(event)
-{
+async function handleLogin(event) {
     event.preventDefault();
 
     const cpf = document.getElementById('cpf').value;
-    const nome = document.getElementById('nome').value;
-    const email = document.getElementById('email').value;
-    const matricula = document.getElementById('matricula').value;
     const senha = document.getElementById('senha').value;
-    const confirmarSenha = document.getElementById('confirmar_senha').value;
+
+    if (!cpf || !senha) {
+        alert('Por favor, preencha todos os campos!');
+        return;
+    }
 
     if (!validarCPF(cpf)) {
         alert('CPF inválido! Verifique o número digitado.');
         return;
     }
 
-    if(senha !== confirmarSenha){
-        alert('As senhas não coincidem! Por favor, verifique.');
-        return;
-    }
+    try {
+        // Fazer requisição para o backend
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cpf, senha })
+        });
 
-    console.log('Cadasrando:', { nome, email, cpf, matricula, senha });
-    
-    document.getElementById('registerForm').reset();
+        const data = await response.json();
+
+        if (data.success) {
+            // Redirecionar para a home
+            window.location.href = '/home';
+        } else {
+            alert(data.message || 'CPF ou senha incorretos!');
+        }
+    } catch (error) {
+        console.error('Erro ao fazer login:', error);
+        alert('Erro ao conectar com o servidor. Tente novamente.');
+    }
 }

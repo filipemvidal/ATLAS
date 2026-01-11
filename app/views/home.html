@@ -4,12 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/home.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>ATLAS</title>
+    <!-- Dados do usuário logado vindos do Flask -->
+    <script id="usuario-data" type="application/json">
+        {{ usuario | tojson }}
+    </script>
 </head>
 
 <body>
+    
     <div class="container">
         <header class="header">
             <div class="logo">
@@ -17,11 +22,11 @@
                 <p>Gerencie o acervo da sua biblioteca</p>
             </div>
             <div class="header-buttons">
-                <button class="btn-primary" id="openReadersBtn" onclick="window.location.href='readers.html'">
+                <button class="btn-primary" id="openReadersBtn" onclick="window.location.href='{{ url_for('main.readers') }}'">
                     <i class="fas fa-users"></i>
-                    Gerenciar Leitores
+                    Gerenciar Usuários
                 </button>
-                <button class="btn-primary" id="addBookBtn" onclick="openBookModal(add_modal)">
+                <button class="btn-primary" id="addBookBtn" onclick="openAddBookModal()">
                     <i class="fas fa-plus"></i>
                     Adicionar Livro
                 </button>
@@ -70,11 +75,11 @@
                         <th>Autor</th>
                         <th>Editora</th>
                         <th>Edição</th>
-                        <th>ISBN</th>
                         <th>Categoria</th>
                         <th>Ano</th>
                         <th>Exemplares</th>
                         <th>Localização</th>
+                        <th>ISBN</th>
                         <th class="actions">Ações</th>
                     </tr>
                 </thead>
@@ -273,8 +278,12 @@
                         <i class="fas fa-book-reader"></i>
                         Emprestar um exemplar
                     </button>
-                    <button class="btn-primary" id="btnReserveFromDetails" onclick="reserveBook()">
+                    <button class="btn-primary" id="btnBorrowDirectFromDetails" onclick="borrowBookDirect()" style="display: none;">
                         <i class="fas fa-book-reader"></i>
+                        Emprestar um exemplar
+                    </button>
+                    <button class="btn-primary" id="btnReserveFromDetails" onclick="reserveBook()">
+                        <i class="fas fa-bookmark"></i>
                         Reservar um exemplar
                     </button>
                 </div>
@@ -300,7 +309,7 @@
         </div>
     </div>
 
-    <script src="../js/home.js"></script>
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
 </body>
 
 </html>

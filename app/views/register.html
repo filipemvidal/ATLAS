@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/register.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>ATLAS | Registre-se</title>
 </head>
@@ -39,9 +39,17 @@
                     </div>
                 </span>
             </div>
-            <button type="submit" id="registerButton">Entrar</button>
+            <div class="input-group">
+                <select id="role" required>
+                    <option value="">Selecione o tipo de usuário</option>
+                    <option value="estudante">Estudante</option>
+                    <option value="professor">Professor</option>
+                    <option value="funcionario">Funcionário</option>
+                </select>
+            </div>
+            <button type="submit" id="registerButton">Cadastrar</button>
         </form>
     </div>
-    <script src="../js/register.js"></script>
+    <script src="{{ url_for('static', filename='js/register.js') }}"></script>
 </body>
 </html>
