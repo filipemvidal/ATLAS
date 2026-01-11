@@ -103,8 +103,8 @@ brew install python3
 
 1. **Clone o repositório**
    ```bash
-   git clone https://github.com/filipemvidal/ATLAS-Backend.git
-   cd ATLAS-ModelagemSistemas
+   git clone https://github.com/filipemvidal/ATLAS.git
+   cd ATLAS
    ```
 
 2. **Crie um ambiente virtual**
