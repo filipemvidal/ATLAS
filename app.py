@@ -6,7 +6,7 @@ app = Flask(__name__,
             static_folder='app/static')
 
 # Configurações
-app.config['SECRET_KEY'] = 'your-secret-key-here'  # Alterar em produção
+app.config['SECRET_KEY'] = '78f65e2c68429e275de0a4a1003823b46bf33855006a3e6d5c66eb45fa1c2562'
 
 # Registrar blueprints
 app.register_blueprint(main_controller.bp)
